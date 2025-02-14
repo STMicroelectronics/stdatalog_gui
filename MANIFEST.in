@@ -1,0 +1,8 @@
+include stdatalog_gui/UI/*
+include stdatalog_gui/UI/icons/*
+include stdatalog_gui/UI/images/*
+include stdatalog_gui/LICENSE.*
+include stdatalog_gui/HSD_GUI/UI/*
+include stdatalog_gui/HSD_GUI/UI/images/*
+include stdatalog_gui/HSD_MC_GUI/UI/*
+include stdatalog_gui/HSD_MC_GUI/UI/images/*
