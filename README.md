@@ -81,10 +81,10 @@ main_window.showMaximized()
 app.exec()
 ```
 For more complete examples, please refer to the following STDATALOG-PYSDK examples:
-- **[stdatalog_gui.py](https://github.com/STMicroelectronics/stdatalog-pysdk/blob/main/examples/gui_applications/stdatalog/GUI/stdatalog_gui.py)**
-- **[stdatalog_mc_gui.py](https://github.com/STMicroelectronics/stdatalog-pysdk/blob/main/examples/gui_applications/stdatalog_mc/Datalog/stdatalog_mc_gui.py)**
-- **[stdatalog_MC_AI_GUI.py](https://github.com/STMicroelectronics/stdatalog-pysdk/blob/main/examples/gui_applications/stdatalog_mc/AI/stdatalog_MC_AI_GUI.py)**
-- **[ultrasound_fft_app.py](https://github.com/STMicroelectronics/stdatalog-pysdk/blob/main/examples/gui_applications/stdatalog_ultrasound_fft/ultrasound_fft_app.py)**
+- **[stdatalog_gui.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog/GUI/stdatalog_gui.py)**
+- **[stdatalog_mc_gui.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/Datalog/stdatalog_MC_GUI.py)**
+- **[stdatalog_MC_AI_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/AI/stdatalog_MC_AI_GUI.py)**
+- **[ultrasound_fft_app.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_ultrasound_fft/ultrasound_fft_app.py)**
 
 ## License
 This project is licensed under the BSD 3-Clause License - see the LICENSE.md file for details.
