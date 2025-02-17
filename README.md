@@ -24,13 +24,20 @@ The package offers a set of base classes and utilities to create custom GUI appl
 
 ## Installation
 
-To install the `stdatalog_gui` package, use the following command:
+To install the `stdatalog_gui` package after downloading it, execute the following command from the package's root directory:
+NOTE: Be sure to satisfy the requirements before installing the package ([see Requirements](#requirements)).
 
+On Windows:
 ```sh
-pip install stdatalog_gui
+python -m pip install dist\stdatalog_gui-1.0.0-py3-none-any.whl
 ```
 
-The package could also be installed as part of the **STDATALOG-PYSDK** by launching the SDK installation script from the SDK root folder:
+On Linux:
+```sh
+python3 -m pip install dist/stdatalog_gui-1.0.0-py3-none-any.whl
+```
+
+The package could also be installed as part of the **[STDATALOG-PYSDK](https://github.com/STMicroelectronics/stdatalog-pysdk)** by launching the SDK installation script from the SDK root folder:
 
 On Windows:
 ```sh
@@ -41,6 +48,8 @@ On Linux:
 ```sh
 ./STDATALOG-PYSDK_install.sh
 ```
+
+Source code is also available within the inner `stdatalog_gui` folder.
 
 ## Requirements
 The package requires the following dependencies:
