@@ -69,11 +69,16 @@ class CommandWidget(QWidget):
         loader = QUiLoader()
         command_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"UI","send_command_widget.ui"), parent)
         command_title_frame = command_widget.frame_component_config.findChild(QFrame,"frame_title")
+        
         command_fields_widget = command_widget.frame_component_config.findChild(QFrame,"frame_contents")
         self.command_send_button = command_widget.findChild(QPushButton,"pushButton")
         self.command_send_button.clicked.connect(partial(self.clicked_send_command_button, self, self.file_id_list))
-        self.command_send_button.setEnabled(False)
-        self.command_send_button.setStyleSheet(STDTDL_PushButton.invalid)
+        if "_mlc" in self.comp_name or "_ispu" in self.comp_name:
+            self.command_send_button.setEnabled(False)
+            self.command_send_button.setStyleSheet(STDTDL_PushButton.invalid)
+        else:
+            self.command_send_button.setEnabled(True)
+            self.command_send_button.setStyleSheet(STDTDL_PushButton.green)
         
         if command_label is not None:
             command_title_label = command_title_frame.findChild(QLabel,"label_title")

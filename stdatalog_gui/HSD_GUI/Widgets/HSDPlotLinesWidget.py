@@ -300,8 +300,9 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
     @Slot(bool, int) #Override PlotLinesWavWidget s_is_logging
     def s_is_logging(self, status: bool, interface: int):
         if not "_mic" in self.comp_name:# or "_acc" in self.comp_name:
-            if interface == 1:
-                print("Sensor {} is logging via USB: {}".format(self.comp_name,status))
+            if interface == 1 or interface == 3:
+                if_str = "USB" if interface == 1 else "Serial"
+                print(f"Sensor {self.comp_name} is logging via {if_str}: {status}")
                 if status:
                     self.__clean_tag_lines()
                     self.current_x = 0

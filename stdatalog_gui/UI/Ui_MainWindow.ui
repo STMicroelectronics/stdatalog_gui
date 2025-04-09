@@ -397,13 +397,72 @@ QProgressBar::chunk {
     border-bottom-left-radius: 6px;
     border-top-right-radius: 6px;
     border-top-left-radius: 6px;
+}
+
+/* SPINBOX */
+QSpinBox {
+    color: rgb(255,255,255);
+    background-color: rgb(27, 29, 35);
+    border-radius: 5px;
+    border: 2px solid rgb(27, 29, 35);
+    padding-left: 10px;
+}
+QSpinBox:hover {
+    border: 2px solid rgb(58, 66, 81);
+}
+QSpinBox:focus {
+    border: 2px solid rgb(91, 101, 124);
+}
+QSpinBox:disabled {
+    color: rgb(60,60,60);
+	border: 2px solid rgb(32, 32, 32);
+}
+
+QSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 16px;
+    border: 1px solid rgb(58, 66, 81);
+}
+QSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 16px;
+    border: 1px solid rgb(58, 66, 81);
+}
+
+QSpinBox::up-button:hover {
+	background-color: rgb(52, 59, 72);
+}
+QSpinBox::down-button:hover {
+	background-color: rgb(52, 59, 72);
+}
+
+QSpinBox::up-arrow {
+    image: url(:/icons/icons/outline_keyboard_arrow_up_white_18dp.png);
+    width: 10px;
+    height: 10px;
+}
+QSpinBox::down-arrow {
+    image: url(:/icons/icons/outline_keyboard_arrow_down_white_18dp.png);
+    width: 10px;
+    height: 10px;
+}
+
+QSpinBox::up-arrow:hover {
+    width: 16px;
+    height: 16px;
+}
+QSpinBox::down-arrow:hover {
+    width: 16px;
+    height: 16px;
 }</string>
       </property>
       <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
+       <enum>QFrame::Shape::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+       <enum>QFrame::Shadow::Raised</enum>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="spacing">
@@ -433,10 +492,10 @@ QProgressBar::chunk {
           <string notr="true">background-color: rgb(40, 44, 52);</string>
          </property>
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
+          <enum>QFrame::Shadow::Raised</enum>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <property name="spacing">
@@ -475,16 +534,16 @@ QProgressBar::chunk {
              </size>
             </property>
             <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
+             <enum>Qt::LayoutDirection::LeftToRight</enum>
             </property>
             <property name="styleSheet">
              <string notr="true">background-color: rgb(27, 29, 35);</string>
             </property>
             <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
+             <enum>QFrame::Shape::NoFrame</enum>
             </property>
             <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
+             <enum>QFrame::Shadow::Raised</enum>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_5">
              <property name="spacing">
@@ -502,7 +561,7 @@ QProgressBar::chunk {
              <property name="bottomMargin">
               <number>0</number>
              </property>
-             <item alignment="Qt::AlignTop">
+             <item alignment="Qt::AlignmentFlag::AlignTop">
               <widget class="QFrame" name="frame_menus">
                <property name="minimumSize">
                 <size>
@@ -511,10 +570,10 @@ QProgressBar::chunk {
                 </size>
                </property>
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="layout_menus">
                 <property name="spacing">
@@ -553,7 +612,7 @@ QProgressBar::chunk {
                    <font/>
                   </property>
                   <property name="layoutDirection">
-                   <enum>Qt::LeftToRight</enum>
+                   <enum>Qt::LayoutDirection::LeftToRight</enum>
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton {	
@@ -601,7 +660,7 @@ QPushButton:pressed {
                    <font/>
                   </property>
                   <property name="layoutDirection">
-                   <enum>Qt::LeftToRight</enum>
+                   <enum>Qt::LayoutDirection::LeftToRight</enum>
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton {	
@@ -649,7 +708,7 @@ QPushButton:pressed {
                    <string>Experimental Features</string>
                   </property>
                   <property name="layoutDirection">
-                   <enum>Qt::LeftToRight</enum>
+                   <enum>Qt::LayoutDirection::LeftToRight</enum>
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton {	
@@ -676,7 +735,7 @@ QPushButton:pressed {
                </layout>
               </widget>
              </item>
-             <item alignment="Qt::AlignBottom">
+             <item alignment="Qt::AlignmentFlag::AlignBottom">
               <widget class="QFrame" name="frame_extra_menus">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -685,10 +744,10 @@ QPushButton:pressed {
                 </sizepolicy>
                </property>
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="layout_menu_bottom">
                 <property name="spacing">
@@ -727,7 +786,7 @@ QPushButton:pressed {
                    <font/>
                   </property>
                   <property name="layoutDirection">
-                   <enum>Qt::LeftToRight</enum>
+                   <enum>Qt::LayoutDirection::LeftToRight</enum>
                   </property>
                   <property name="styleSheet">
                    <string notr="true">color: transparent;
@@ -776,7 +835,7 @@ QPushButton:pressed {
                    <string>Show Application Log File</string>
                   </property>
                   <property name="layoutDirection">
-                   <enum>Qt::LeftToRight</enum>
+                   <enum>Qt::LayoutDirection::LeftToRight</enum>
                   </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton {	
@@ -812,10 +871,10 @@ QPushButton:pressed {
              <string notr="true">background-color: rgb(44, 49, 60);</string>
             </property>
             <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
+             <enum>QFrame::Shape::NoFrame</enum>
             </property>
             <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
+             <enum>QFrame::Shadow::Raised</enum>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_4">
              <property name="spacing">
@@ -848,10 +907,10 @@ QPushButton:pressed {
                 </size>
                </property>
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_9">
                 <property name="spacing">
@@ -881,11 +940,11 @@ QPushButton:pressed {
                    <string notr="true">background: transparent;</string>
                   </property>
                   <property name="currentIndex">
-                   <number>2</number>
+                   <number>1</number>
                   </property>
                   <widget class="QWidget" name="page_connection">
                    <layout class="QVBoxLayout" name="page_connection_vlayout">
-                    <item alignment="Qt::AlignRight">
+                    <item alignment="Qt::AlignmentFlag::AlignRight">
                      <widget class="QFrame" name="additional_settings_frame">
                       <property name="minimumSize">
                        <size>
@@ -893,31 +952,92 @@ QPushButton:pressed {
                         <height>0</height>
                        </size>
                       </property>
-                      <property name="frameShape">
-                       <enum>QFrame::StyledPanel</enum>
+                      <property name="cursor">
+                       <cursorShape>ArrowCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">QFrame {
+	 border: transparent
+}
+QLineEdit {
+	background-color: rgb(27, 29, 35);
+	border-radius: 5px;
+	border: 2px solid rgb(27, 29, 35);
+	padding-left: 10px;
+}
+QLineEdit:hover {
+	border: 2px solid rgb(64, 71, 88);
+}
+QLineEdit:focus {
+	border: 2px solid rgb(91, 101, 124);
+}
+QLineEdit:disabled {
+	background-color: rgb(36, 40, 48);
+	border: 2px solid rgb(32, 32, 32);
+}
+QComboBox{
+	background-color: rgb(27, 29, 35);
+	border-radius: 5px;
+	border: 2px solid rgb(27, 29, 35);
+	padding: 5px;
+	padding-left: 10px;
+}
+QComboBox:hover{
+	border: 2px solid rgb(64, 71, 88);
+}
+QComboBox:focus {
+	border: 2px solid rgb(91, 101, 124);
+}
+QComboBox QAbstractItemView {
+	color: rgb(85, 170, 255);	
+	background-color: rgb(27, 29, 35);
+	padding: 10px;
+	selection-background-color: rgb(39, 44, 54);
+}
+QComboBox:disabled {
+	background-color: rgb(36, 40, 48);
+	border: 2px solid rgb(32, 32, 32);
+}
+
+/* RADIO BUTTON */
+QRadioButton::indicator {
+    border: 3px solid rgb(52, 59, 72);
+	width: 15px;
+	height: 15px;
+	border-radius: 10px;
+    background: rgb(44, 49, 60);
+}
+QRadioButton::indicator:hover {
+    border: 3px solid rgb(58, 66, 81);
+}
+QRadioButton::indicator:checked {
+    background: 3px solid rgb(94, 106, 130);
+	border: 3px solid rgb(52, 59, 72);	
+}
+</string>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
+                       <enum>QFrame::Shadow::Raised</enum>
                       </property>
-                      <layout class="QVBoxLayout" name="verticalLayout_17">
-                       <item>
+                      <layout class="QVBoxLayout" name="verticalLayout_11">
+                       <item alignment="Qt::AlignmentFlag::AlignRight">
                         <widget class="QFrame" name="frame_log_file_options">
                          <property name="frameShape">
-                          <enum>QFrame::StyledPanel</enum>
+                          <enum>QFrame::Shape::StyledPanel</enum>
                          </property>
                          <property name="frameShadow">
-                          <enum>QFrame::Raised</enum>
+                          <enum>QFrame::Shadow::Raised</enum>
                          </property>
                          <layout class="QHBoxLayout" name="horizontalLayout_4"/>
                         </widget>
                        </item>
-                       <item>
+                       <item alignment="Qt::AlignmentFlag::AlignRight">
                         <widget class="QFrame" name="frame_dt_settings">
                          <property name="frameShape">
-                          <enum>QFrame::StyledPanel</enum>
+                          <enum>QFrame::Shape::StyledPanel</enum>
                          </property>
                          <property name="frameShadow">
-                          <enum>QFrame::Raised</enum>
+                          <enum>QFrame::Shadow::Raised</enum>
                          </property>
                          <layout class="QHBoxLayout" name="horizontalLayout_8"/>
                         </widget>
@@ -928,7 +1048,7 @@ QPushButton:pressed {
                     <item>
                      <spacer name="verticalSpacer">
                       <property name="orientation">
-                       <enum>Qt::Vertical</enum>
+                       <enum>Qt::Orientation::Vertical</enum>
                       </property>
                       <property name="sizeHint" stdset="0">
                        <size>
@@ -962,10 +1082,10 @@ QPushButton:pressed {
                        <string notr="true">border-radius: 5px;</string>
                       </property>
                       <property name="frameShape">
-                       <enum>QFrame::StyledPanel</enum>
+                       <enum>QFrame::Shape::StyledPanel</enum>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
+                       <enum>QFrame::Shadow::Raised</enum>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_12">
                        <property name="spacing">
@@ -1001,7 +1121,7 @@ QPushButton:pressed {
                           <string>Title</string>
                          </property>
                          <property name="alignment">
-                          <set>Qt::AlignCenter</set>
+                          <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
                         </widget>
                        </item>
@@ -1087,7 +1207,7 @@ QPushButton:pressed {
                           </sizepolicy>
                          </property>
                          <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
+                          <enum>Qt::Orientation::Horizontal</enum>
                          </property>
                          <property name="opaqueResize">
                           <bool>true</bool>
@@ -1119,8 +1239,8 @@ QPushButton:pressed {
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>482</width>
-                             <height>45</height>
+                             <width>496</width>
+                             <height>1003</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -1172,13 +1292,13 @@ QPushButton:pressed {
                                <string notr="true">color: rgb(27, 29, 35);</string>
                               </property>
                               <property name="frameShadow">
-                               <enum>QFrame::Plain</enum>
+                               <enum>QFrame::Shadow::Plain</enum>
                               </property>
                               <property name="lineWidth">
                                <number>3</number>
                               </property>
                               <property name="orientation">
-                               <enum>Qt::Horizontal</enum>
+                               <enum>Qt::Orientation::Horizontal</enum>
                               </property>
                              </widget>
                             </item>
@@ -1190,22 +1310,7 @@ QPushButton:pressed {
                                 <height>0</height>
                                </size>
                               </property>
-                              <layout class="QVBoxLayout" name="verticalLayout_11">
-                               <property name="spacing">
-                                <number>0</number>
-                               </property>
-                               <property name="leftMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="topMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="rightMargin">
-                                <number>0</number>
-                               </property>
-                               <property name="bottomMargin">
-                                <number>0</number>
-                               </property>
+                              <layout class="QVBoxLayout" name="verticalLayout_17">
                                <item>
                                 <widget class="QFrame" name="select_all_frame">
                                  <property name="minimumSize">
@@ -1214,14 +1319,90 @@ QPushButton:pressed {
                                    <height>0</height>
                                   </size>
                                  </property>
-                                 <property name="frameShape">
-                                  <enum>QFrame::StyledPanel</enum>
+                                 <property name="cursor">
+                                  <cursorShape>ArrowCursor</cursorShape>
+                                 </property>
+                                 <property name="styleSheet">
+                                  <string notr="true">QFrame {
+	 border: transparent
+}
+QLineEdit {
+	background-color: rgb(27, 29, 35);
+	border-radius: 5px;
+	border: 2px solid rgb(27, 29, 35);
+	padding-left: 10px;
+}
+QLineEdit:hover {
+	border: 2px solid rgb(64, 71, 88);
+}
+QLineEdit:focus {
+	border: 2px solid rgb(91, 101, 124);
+}
+QLineEdit:disabled {
+	background-color: rgb(36, 40, 48);
+	border: 2px solid rgb(32, 32, 32);
+}
+QComboBox{
+	background-color: rgb(27, 29, 35);
+	border-radius: 5px;
+	border: 2px solid rgb(27, 29, 35);
+	padding: 5px;
+	padding-left: 10px;
+}
+QComboBox:hover{
+	border: 2px solid rgb(64, 71, 88);
+}
+QComboBox:focus {
+	border: 2px solid rgb(91, 101, 124);
+}
+QComboBox QAbstractItemView {
+	color: rgb(85, 170, 255);	
+	background-color: rgb(27, 29, 35);
+	padding: 10px;
+	selection-background-color: rgb(39, 44, 54);
+}
+QComboBox:disabled {
+	background-color: rgb(36, 40, 48);
+	border: 2px solid rgb(32, 32, 32);
+}
+
+/* RADIO BUTTON */
+QRadioButton::indicator {
+    border: 3px solid rgb(52, 59, 72);
+	width: 15px;
+	height: 15px;
+	border-radius: 10px;
+    background: rgb(44, 49, 60);
+}
+QRadioButton::indicator:hover {
+    border: 3px solid rgb(58, 66, 81);
+}
+QRadioButton::indicator:checked {
+    background: 3px solid rgb(94, 106, 130);
+	border: 3px solid rgb(52, 59, 72);	
+}
+</string>
                                  </property>
                                  <property name="frameShadow">
-                                  <enum>QFrame::Raised</enum>
+                                  <enum>QFrame::Shadow::Raised</enum>
                                  </property>
-                                 <layout class="QHBoxLayout" name="horizontalLayout_5">
-                                  <item alignment="Qt::AlignRight">
+                                 <layout class="QHBoxLayout" name="horizontalLayout_11">
+                                  <property name="spacing">
+                                   <number>24</number>
+                                  </property>
+                                  <property name="leftMargin">
+                                   <number>9</number>
+                                  </property>
+                                  <property name="topMargin">
+                                   <number>9</number>
+                                  </property>
+                                  <property name="rightMargin">
+                                   <number>9</number>
+                                  </property>
+                                  <property name="bottomMargin">
+                                   <number>9</number>
+                                  </property>
+                                  <item alignment="Qt::AlignmentFlag::AlignRight">
                                    <widget class="QLabel" name="select_all_label">
                                     <property name="font">
                                      <font>
@@ -1242,7 +1423,7 @@ QPushButton:pressed {
                             <item>
                              <spacer name="verticalSpacer_2">
                               <property name="orientation">
-                               <enum>Qt::Vertical</enum>
+                               <enum>Qt::Orientation::Vertical</enum>
                               </property>
                               <property name="sizeHint" stdset="0">
                                <size>
@@ -1264,8 +1445,8 @@ QPushButton:pressed {
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>34</width>
-                             <height>16</height>
+                             <width>475</width>
+                             <height>1003</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1316,7 +1497,7 @@ QPushButton:pressed {
                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:24px; color:#ffffff;&quot;&gt;Welcome to the&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:36px; font-weight:700; color:#ffffff;&quot;&gt;Experimental Features page&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;Here, you can explore and activate new functionalities that are currently in development, giving you an exclusive preview of upcoming innovations and enhancements&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                       </property>
                       <property name="textFormat">
-                       <enum>Qt::MarkdownText</enum>
+                       <enum>Qt::TextFormat::MarkdownText</enum>
                       </property>
                       <property name="wordWrap">
                        <bool>true</bool>
@@ -1373,7 +1554,7 @@ QPushButton:pressed {
     }</string>
                       </property>
                       <property name="tabPosition">
-                       <enum>QTabWidget::North</enum>
+                       <enum>QTabWidget::TabPosition::North</enum>
                       </property>
                       <property name="currentIndex">
                        <number>0</number>
@@ -1426,8 +1607,8 @@ QPushButton:pressed {
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>980</width>
-                             <height>810</height>
+                             <width>306</width>
+                             <height>698</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1455,10 +1636,10 @@ QPushButton:pressed {
                                </size>
                               </property>
                               <property name="frameShape">
-                               <enum>QFrame::StyledPanel</enum>
+                               <enum>QFrame::Shape::StyledPanel</enum>
                               </property>
                               <property name="frameShadow">
-                               <enum>QFrame::Raised</enum>
+                               <enum>QFrame::Shadow::Raised</enum>
                               </property>
                               <layout class="QVBoxLayout" name="verticalLayout_19">
                                <property name="leftMargin">
@@ -1512,10 +1693,10 @@ padding: 9;</string>
                                   <string notr="true">border-radius: 5px;</string>
                                  </property>
                                  <property name="frameShape">
-                                  <enum>QFrame::StyledPanel</enum>
+                                  <enum>QFrame::Shape::StyledPanel</enum>
                                  </property>
                                  <property name="frameShadow">
-                                  <enum>QFrame::Raised</enum>
+                                  <enum>QFrame::Shadow::Raised</enum>
                                  </property>
                                  <layout class="QVBoxLayout" name="verticalLayout_20">
                                   <property name="spacing">
@@ -1599,10 +1780,10 @@ QRadioButton::indicator:checked {
                                         <string notr="true"/>
                                        </property>
                                        <property name="frameShape">
-                                        <enum>QFrame::StyledPanel</enum>
+                                        <enum>QFrame::Shape::StyledPanel</enum>
                                        </property>
                                        <property name="frameShadow">
-                                        <enum>QFrame::Raised</enum>
+                                        <enum>QFrame::Shadow::Raised</enum>
                                        </property>
                                        <layout class="QHBoxLayout" name="horizontalLayout_38">
                                         <property name="spacing">
@@ -1789,28 +1970,28 @@ QRadioButton::indicator:checked {
                                         <bool>false</bool>
                                        </property>
                                        <property name="dragDropMode">
-                                        <enum>QAbstractItemView::NoDragDrop</enum>
+                                        <enum>QAbstractItemView::DragDropMode::NoDragDrop</enum>
                                        </property>
                                        <property name="defaultDropAction">
-                                        <enum>Qt::CopyAction</enum>
+                                        <enum>Qt::DropAction::CopyAction</enum>
                                        </property>
                                        <property name="alternatingRowColors">
                                         <bool>false</bool>
                                        </property>
                                        <property name="selectionMode">
-                                        <enum>QAbstractItemView::ExtendedSelection</enum>
+                                        <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
                                        </property>
                                        <property name="textElideMode">
-                                        <enum>Qt::ElideNone</enum>
+                                        <enum>Qt::TextElideMode::ElideNone</enum>
                                        </property>
                                        <property name="movement">
-                                        <enum>QListView::Static</enum>
+                                        <enum>QListView::Movement::Static</enum>
                                        </property>
                                        <property name="resizeMode">
-                                        <enum>QListView::Fixed</enum>
+                                        <enum>QListView::ResizeMode::Fixed</enum>
                                        </property>
                                        <property name="viewMode">
-                                        <enum>QListView::ListMode</enum>
+                                        <enum>QListView::ViewMode::ListMode</enum>
                                        </property>
                                       </widget>
                                      </item>
@@ -1834,7 +2015,7 @@ QRadioButton::indicator:checked {
                                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:700;&quot;&gt;*&lt;/span&gt;By enabling this feature, the data streams acquired from the sensors of a connected board pass through a data pipeline composed of a series of plugins. Along with the PythonSDK, in the examples folder, we provide a folder named &lt;span style=&quot; font-weight:700; text-decoration: underline;&quot;&gt;data_toolkit_plugins&lt;/span&gt; that contains three example plugins. Each plugin must implement a function named &lt;span style=&quot; font-weight:700;&quot;&gt;process&lt;/span&gt;, which processes the data received from the previous plugin and passes it to the next plugin. Additionally, each plugin can implement a function named &lt;span style=&quot; font-weight:700;&quot;&gt;create_plot_widget&lt;/span&gt;, which should return a QWidget that is automatically inserted into a dedicated section of this GUI (on the acquisition management page).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                  </property>
                                  <property name="textFormat">
-                                  <enum>Qt::MarkdownText</enum>
+                                  <enum>Qt::TextFormat::MarkdownText</enum>
                                  </property>
                                  <property name="wordWrap">
                                   <bool>true</bool>
@@ -1886,8 +2067,8 @@ QRadioButton::indicator:checked {
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>980</width>
-                             <height>810</height>
+                             <width>599</width>
+                             <height>382</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1921,10 +2102,10 @@ QRadioButton::indicator:checked {
                                </sizepolicy>
                               </property>
                               <property name="frameShape">
-                               <enum>QFrame::StyledPanel</enum>
+                               <enum>QFrame::Shape::StyledPanel</enum>
                               </property>
                               <property name="frameShadow">
-                               <enum>QFrame::Raised</enum>
+                               <enum>QFrame::Shadow::Raised</enum>
                               </property>
                               <layout class="QVBoxLayout" name="verticalLayout_18">
                                <property name="leftMargin">
@@ -1957,10 +2138,10 @@ QRadioButton::indicator:checked {
 }</string>
                                  </property>
                                  <property name="frameShape">
-                                  <enum>QFrame::StyledPanel</enum>
+                                  <enum>QFrame::Shape::StyledPanel</enum>
                                  </property>
                                  <property name="frameShadow">
-                                  <enum>QFrame::Raised</enum>
+                                  <enum>QFrame::Shadow::Raised</enum>
                                  </property>
                                  <layout class="QHBoxLayout" name="horizontalLayout_9">
                                   <property name="leftMargin">
@@ -2046,7 +2227,7 @@ QPushButton:disabled {
                                   <item>
                                    <spacer name="horizontalSpacer">
                                     <property name="orientation">
-                                     <enum>Qt::Horizontal</enum>
+                                     <enum>Qt::Orientation::Horizontal</enum>
                                     </property>
                                     <property name="sizeHint" stdset="0">
                                      <size>
@@ -2101,7 +2282,7 @@ QPushButton:disabled {
                                  </layout>
                                 </widget>
                                </item>
-                               <item alignment="Qt::AlignHCenter">
+                               <item alignment="Qt::AlignmentFlag::AlignHCenter">
                                 <widget class="QLabel" name="login_error_label">
                                  <property name="styleSheet">
                                   <string notr="true">font: 700 11pt &quot;Consolas&quot;;
@@ -2124,10 +2305,10 @@ color: red;</string>
                                   <string notr="true">border-radius: 5px;</string>
                                  </property>
                                  <property name="frameShape">
-                                  <enum>QFrame::StyledPanel</enum>
+                                  <enum>QFrame::Shape::StyledPanel</enum>
                                  </property>
                                  <property name="frameShadow">
-                                  <enum>QFrame::Raised</enum>
+                                  <enum>QFrame::Shadow::Raised</enum>
                                  </property>
                                  <layout class="QHBoxLayout" name="horizontalLayout_10">
                                   <property name="spacing">
@@ -2163,10 +2344,10 @@ color: red;</string>
                                      <string notr="true"/>
                                     </property>
                                     <property name="frameShape">
-                                     <enum>QFrame::Panel</enum>
+                                     <enum>QFrame::Shape::Panel</enum>
                                     </property>
                                     <property name="frameShadow">
-                                     <enum>QFrame::Raised</enum>
+                                     <enum>QFrame::Shadow::Raised</enum>
                                     </property>
                                     <layout class="QVBoxLayout" name="verticalLayout_21">
                                      <property name="spacing">
@@ -2282,37 +2463,37 @@ QRadioButton::indicator:checked {
                                            <bool>false</bool>
                                           </property>
                                           <property name="dragDropMode">
-                                           <enum>QAbstractItemView::NoDragDrop</enum>
+                                           <enum>QAbstractItemView::DragDropMode::NoDragDrop</enum>
                                           </property>
                                           <property name="defaultDropAction">
-                                           <enum>Qt::CopyAction</enum>
+                                           <enum>Qt::DropAction::CopyAction</enum>
                                           </property>
                                           <property name="alternatingRowColors">
                                            <bool>false</bool>
                                           </property>
                                           <property name="selectionMode">
-                                           <enum>QAbstractItemView::NoSelection</enum>
+                                           <enum>QAbstractItemView::SelectionMode::NoSelection</enum>
                                           </property>
                                           <property name="textElideMode">
-                                           <enum>Qt::ElideNone</enum>
+                                           <enum>Qt::TextElideMode::ElideNone</enum>
                                           </property>
                                           <property name="verticalScrollMode">
-                                           <enum>QAbstractItemView::ScrollPerPixel</enum>
+                                           <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
                                           </property>
                                           <property name="horizontalScrollMode">
-                                           <enum>QAbstractItemView::ScrollPerPixel</enum>
+                                           <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
                                           </property>
                                           <property name="movement">
-                                           <enum>QListView::Static</enum>
+                                           <enum>QListView::Movement::Static</enum>
                                           </property>
                                           <property name="isWrapping" stdset="0">
                                            <bool>false</bool>
                                           </property>
                                           <property name="resizeMode">
-                                           <enum>QListView::Fixed</enum>
+                                           <enum>QListView::ResizeMode::Fixed</enum>
                                           </property>
                                           <property name="viewMode">
-                                           <enum>QListView::ListMode</enum>
+                                           <enum>QListView::ViewMode::ListMode</enum>
                                           </property>
                                          </widget>
                                         </item>
@@ -2359,7 +2540,7 @@ QComboBox:disabled{
 }</string>
                                     </property>
                                     <property name="frameShadow">
-                                     <enum>QFrame::Raised</enum>
+                                     <enum>QFrame::Shadow::Raised</enum>
                                     </property>
                                     <layout class="QHBoxLayout" name="horizontalLayout_34">
                                      <property name="spacing">
@@ -2467,10 +2648,10 @@ QRadioButton::indicator:checked {
                                            <string notr="true"/>
                                           </property>
                                           <property name="frameShape">
-                                           <enum>QFrame::StyledPanel</enum>
+                                           <enum>QFrame::Shape::StyledPanel</enum>
                                           </property>
                                           <property name="frameShadow">
-                                           <enum>QFrame::Raised</enum>
+                                           <enum>QFrame::Shadow::Raised</enum>
                                           </property>
                                           <layout class="QHBoxLayout" name="horizontalLayout_36">
                                            <property name="spacing">
@@ -2693,28 +2874,28 @@ QRadioButton::indicator:checked {
                                               <bool>false</bool>
                                              </property>
                                              <property name="dragDropMode">
-                                              <enum>QAbstractItemView::NoDragDrop</enum>
+                                              <enum>QAbstractItemView::DragDropMode::NoDragDrop</enum>
                                              </property>
                                              <property name="defaultDropAction">
-                                              <enum>Qt::CopyAction</enum>
+                                              <enum>Qt::DropAction::CopyAction</enum>
                                              </property>
                                              <property name="alternatingRowColors">
                                               <bool>false</bool>
                                              </property>
                                              <property name="selectionMode">
-                                              <enum>QAbstractItemView::SingleSelection</enum>
+                                              <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
                                              </property>
                                              <property name="textElideMode">
-                                              <enum>Qt::ElideNone</enum>
+                                              <enum>Qt::TextElideMode::ElideNone</enum>
                                              </property>
                                              <property name="movement">
-                                              <enum>QListView::Static</enum>
+                                              <enum>QListView::Movement::Static</enum>
                                              </property>
                                              <property name="resizeMode">
-                                              <enum>QListView::Fixed</enum>
+                                              <enum>QListView::ResizeMode::Fixed</enum>
                                              </property>
                                              <property name="viewMode">
-                                              <enum>QListView::ListMode</enum>
+                                              <enum>QListView::ViewMode::ListMode</enum>
                                              </property>
                                             </widget>
                                            </item>
@@ -2887,10 +3068,10 @@ QPushButton:disabled {
                        <string notr="true">border-radius: 5px;</string>
                       </property>
                       <property name="frameShape">
-                       <enum>QFrame::StyledPanel</enum>
+                       <enum>QFrame::Shape::StyledPanel</enum>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
+                       <enum>QFrame::Shadow::Raised</enum>
                       </property>
                       <layout class="QVBoxLayout" name="verticalLayout_8">
                        <property name="spacing">
@@ -2966,10 +3147,10 @@ background-color: rgb(39, 44, 54);</string>
                 <string notr="true">background-color: rgb(33, 37, 43);</string>
                </property>
                <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
+                <enum>QFrame::Shape::NoFrame</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_6">
                 <property name="spacing">
@@ -2990,10 +3171,10 @@ background-color: rgb(39, 44, 54);</string>
                 <item>
                  <widget class="QFrame" name="frame_label_bottom">
                   <property name="frameShape">
-                   <enum>QFrame::NoFrame</enum>
+                   <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_7">
                    <property name="spacing">
@@ -3042,7 +3223,7 @@ background-color: rgb(39, 44, 54);</string>
                       <string>v1.0.0</string>
                      </property>
                      <property name="alignment">
-                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
                      </property>
                     </widget>
                    </item>

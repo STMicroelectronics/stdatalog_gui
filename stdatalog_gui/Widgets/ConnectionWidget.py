@@ -50,7 +50,7 @@ class ConnectionWidget(QWidget):
         self.com_speed_frame = contents_widget.findChild(QFrame, "frame_COM_speed")
         self.com_speed_value = contents_widget.findChild(QLineEdit, "lineEdit_COM_speed")
         self.com_speed_value.setValidator(QIntValidator(1, 2147483647))  # Limit input to positive integers
-        self.com_speed_value.setText("1846730")  # Default value
+        self.com_speed_value.setText("1843200")  # Default value
         self.com_speed_value.setToolTip("Enter a value between 1 and 2147483647")  # Tooltip with min and max values
         self.com_speed_frame.setVisible(False)
 
@@ -136,8 +136,14 @@ class ConnectionWidget(QWidget):
                             self.controller.sig_mcp_check_connection.emit()
                             do_connection = False
             if do_connection:
-                #TODO if the hsd_link is a serial link, the baudrate should be read from a dedicated field in this widget
-                self.controller.connect_to(self.COM_combo_box.currentIndex(), self.COM_combo_box.currentText())
+                if self.controller.is_hsd_link_serial():
+                    if self.com_speed_value.text() == "":
+                        self.show_error_message("Please enter a valid baudrate")
+                        return
+                    else:
+                        self.controller.connect_to(self.COM_combo_box.currentIndex(), self.COM_combo_box.currentText(),int(self.com_speed_value.text()))
+                else:
+                    self.controller.connect_to(self.COM_combo_box.currentIndex(), self.COM_combo_box.currentText())
                 pres_res = self.controller.get_device_presentation_string(self.COM_combo_box.currentIndex())
                 if pres_res is not None:
                     self.presentation_widget.setVisible(True)

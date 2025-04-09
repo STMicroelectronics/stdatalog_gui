@@ -95,8 +95,8 @@ class STDTDL_Controller(QObject):
     def set_plots_layout(self, plots_layout):
         self.plots_layout = plots_layout
     
-    def add_dtdl_model(self, board_id, fw_id, dtdl_model_json):
-        DeviceTemplateManager.add_dtdl_model(board_id, fw_id, dtdl_model_json)
+    def add_dtdl_model(self, board_id, fw_id, dtdl_model_name, dtdl_model_json):
+        DeviceTemplateManager.add_dtdl_model(board_id, fw_id, dtdl_model_name, dtdl_model_json)
     
     def query_dtdl_model(self, board_id, fw_id):
         return DeviceTemplateManager.query_dtdl_model(board_id, fw_id)

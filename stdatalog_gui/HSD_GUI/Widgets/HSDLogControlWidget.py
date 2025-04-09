@@ -354,7 +354,9 @@ class HSDLogControlWidget(ComponentWidget):
         # else:
         #     interface = self.interface_combobox.currentIndex()
         interface = 1
-        # ============================================================================================================== 
+        # ==============================================================================================================
+        if self.controller.is_hsd_link_serial():
+            interface = 3
         if not self.is_logging:
             if not self.is_waiting_to_start:
                 self.controller.update_pipeline_component_status()
@@ -387,6 +389,8 @@ class HSDLogControlWidget(ComponentWidget):
                 else:
                     self.acq_folder = self.acq_folder_lineEdit.text()
                     self.save_files_checkbox.setEnabled(False)
+                    # if self.controller.is_hsd_link_serial():
+                    #     interface = 3
                     self.controller.start_log(interface, self.acq_folder, self.sub_folder)
             else:
                 if self.controller.is_automode_enabled():

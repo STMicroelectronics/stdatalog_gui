@@ -96,65 +96,68 @@ class TagsInfoWidget(ComponentWidget):
         loader = QUiLoader()
         tags_info_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"HSD_GUI","UI","tags_info_widget.ui"))
         frame_contents = tags_info_widget.frame_tags_info.findChild(QFrame,"frame_contents")
-        frame_sw_tags_contents = tags_info_widget.frame_tags_info.findChild(QFrame,"frame_sw_tags_contents")
-        frame_hw_tags_title = tags_info_widget.frame_tags_info.findChild(QFrame,"frame_hw_tags_title")
-        frame_hw_tags_title.setVisible(False)
-        frame_hw_tags_contents = tags_info_widget.frame_tags_info.findChild(QFrame,"frame_hw_tags_contents")
-        frame_hw_tags_contents.setVisible(False)
+        
+        # Optimize layout
+        self.contents_widget.setUpdatesEnabled(False)
+        self.contents_widget.layout().addWidget(frame_contents)
+        self.contents_widget.setUpdatesEnabled(True)
+
+        # Lazy load tags
+        self.load_tags(loader, comp_contents)
+        
+        self.assign_keys_to_tags()
+    
+    def load_tags(self, loader, comp_contents):
+        sw_tags = [c for c in comp_contents if "sw_tag" in c.name]
+        hw_tags = [c for c in comp_contents if "hw_tag" in c.name]
 
         sw_tags_grid_layout = QGridLayout()
-        sw_tags_grid_layout.setContentsMargins(0,0,0,0)
-        sw_tags_grid_layout.setHorizontalSpacing(0)
-        sw_tags_grid_layout.setVerticalSpacing(0)
-        
+        sw_tags_grid_layout.setContentsMargins(0, 0, 0, 0)
+        sw_tags_grid_layout.setHorizontalSpacing(10)  # Adjust spacing between columns
+        sw_tags_grid_layout.setVerticalSpacing(10)    # Adjust spacing between rows
+
         hw_tags_grid_layout = QGridLayout()
-        hw_tags_grid_layout.setContentsMargins(0,0,0,0)
-        hw_tags_grid_layout.setHorizontalSpacing(0)
-        hw_tags_grid_layout.setVerticalSpacing(0)
-        
-        w_on_col = 2
-        r_id = 0
-        c_id = 0
-        
-        hw_tags = [c for c in comp_contents if "hw_tag" in c.name]
-        sw_tags = [c for c in comp_contents if "sw_tag" in c.name]
-        
+        hw_tags_grid_layout.setContentsMargins(0, 0, 0, 0)
+        hw_tags_grid_layout.setHorizontalSpacing(10)
+        hw_tags_grid_layout.setVerticalSpacing(10)
+
+        # Add software tags in two columns
+        row, col = 0, 0
         for st in sw_tags:
-            sw_tag_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"HSD_GUI","UI","sw_tag.ui"))
+            sw_tag_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__), "HSD_GUI", "UI", "sw_tag.ui"))
             tag_toggle_button = ToggleButton()
-            frame_tag_toggle_button = sw_tag_widget.findChild(QFrame,"frame_tag_toggle_button")
-            sw_tag_frame_contents = sw_tag_widget.findChild(QFrame,"frame_contents")
+            frame_tag_toggle_button = sw_tag_widget.findChild(QFrame, "frame_tag_toggle_button")
             frame_tag_toggle_button.layout().addWidget(tag_toggle_button)
-            tag_index = int(st.name.split('_')[-1][3:])
-            svg_widget = QSvgWidget(tag_img_map[tag_index])
-            svg_widget.setFixedSize(24, 24)
-            sw_tag_frame_contents.layout().addWidget(svg_widget)
             sw_tag_widget.tag_label.editingFinished.connect(partial(self.tag_label_changed, st.name))
             tag_toggle_button.stateChanged.connect(partial(self.tag_button_toggled, st.name))
-            self.sw_tags_wgt_dict[st.name] = {"tag_label":sw_tag_widget.tag_label,"tag_button":tag_toggle_button,"tag_status":False}
-            sw_tags_grid_layout.addWidget(sw_tag_widget,r_id,c_id)
-            c_id += 1
-            if c_id == w_on_col:
-                c_id = 0
-                r_id += 1
-                
-        r_id += 1
-        c_id = 0
-                
+            self.sw_tags_wgt_dict[st.name] = {"tag_label": sw_tag_widget.tag_label, "tag_button": tag_toggle_button, "tag_status": False}
+            sw_tags_grid_layout.addWidget(sw_tag_widget, row, col)
+
+            # Move to the next column or row
+            col += 1
+            if col == 2:  # Two columns
+                col = 0
+                row += 1
+
+        # Add hardware tags in two columns
+        row, col = 0, 0
         for ht in hw_tags:
-            hw_tag_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"HSD_GUI","UI","hw_tag.ui"))
+            hw_tag_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__), "HSD_GUI", "UI", "hw_tag.ui"))
             hw_tag_widget.tag_label.editingFinished.connect(partial(self.tag_label_changed, ht.name))
-            self.hw_tags_wgt_dict[ht.name] = {"tag_label":hw_tag_widget.tag_label}
-            hw_tags_grid_layout.addWidget(hw_tag_widget,r_id,c_id)
-            c_id += 1
-            if c_id == w_on_col:
-                c_id = 0
-                r_id += 1
-        
+            self.hw_tags_wgt_dict[ht.name] = {"tag_label": hw_tag_widget.tag_label}
+            hw_tags_grid_layout.addWidget(hw_tag_widget, row, col)
+
+            # Move to the next column or row
+            col += 1
+            if col == 2:  # Two columns
+                col = 0
+                row += 1
+
+        # Add layouts to frames
+        frame_sw_tags_contents = self.contents_widget.findChild(QFrame, "frame_sw_tags_contents")
+        frame_hw_tags_contents = self.contents_widget.findChild(QFrame, "frame_hw_tags_contents")
         frame_sw_tags_contents.layout().addLayout(sw_tags_grid_layout)
         frame_hw_tags_contents.layout().addLayout(hw_tags_grid_layout)
-        self.contents_widget.layout().addWidget(frame_contents)
-        self.assign_keys_to_tags()
     
     def tag_button_toggled(self, tag_name, a=None):
         self.toggle_tag_status(tag_name)

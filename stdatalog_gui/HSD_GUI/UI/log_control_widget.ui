@@ -64,10 +64,10 @@ border-radius: 5px;
 </string>
      </property>
      <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+      <enum>QFrame::Shape::NoFrame</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+      <enum>QFrame::Shadow::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <property name="leftMargin">
@@ -116,10 +116,68 @@ QComboBox QAbstractItemView {
 QComboBox:disabled{
 	color: rgb(60,60,60);
 	border: 2px solid rgb(32, 32, 32);
+}
+
+QSpinBox {
+    color: rgb(255,255,255);
+    background-color: rgb(27, 29, 35);
+    border-radius: 5px;
+    border: 2px solid rgb(27, 29, 35);
+    padding-left: 10px;
+}
+QSpinBox:hover {
+    border: 2px solid rgb(58, 66, 81);
+}
+QSpinBox:focus {
+    border: 2px solid rgb(91, 101, 124);
+}
+QSpinBox:disabled {
+    color: rgb(60,60,60);
+	border: 2px solid rgb(32, 32, 32);
+}
+
+QSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 16px;
+    border: 1px solid rgb(58, 66, 81);
+}
+QSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 16px;
+    border: 1px solid rgb(58, 66, 81);
+}
+
+QSpinBox::up-button:hover {
+	background-color: rgb(52, 59, 72);
+}
+QSpinBox::down-button:hover {
+	background-color: rgb(52, 59, 72);
+}
+
+QSpinBox::up-arrow {
+    image: url(:/icons/icons/outline_keyboard_arrow_up_white_18dp.png);
+    width: 10px;
+    height: 10px;
+}
+QSpinBox::down-arrow {
+    image: url(:/icons/icons/outline_keyboard_arrow_down_white_18dp.png);
+    width: 10px;
+    height: 10px;
+}
+
+QSpinBox::up-arrow:hover {
+    width: 16px;
+    height: 16px;
+}
+QSpinBox::down-arrow:hover {
+    width: 16px;
+    height: 16px;
 }</string>
         </property>
         <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
+         <enum>QFrame::Shadow::Raised</enum>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <property name="spacing">
@@ -193,16 +251,16 @@ QPushButton:disabled {
             <property name="bottomMargin">
              <number>6</number>
             </property>
-            <item alignment="Qt::AlignBottom">
+            <item alignment="Qt::AlignmentFlag::AlignBottom">
              <widget class="QFrame" name="groupBox_save_load_buttons">
               <property name="styleSheet">
                <string notr="true">border-color: transparent;</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_10">
                <property name="leftMargin">
@@ -241,7 +299,7 @@ QPushButton:disabled {
                   <string>Save</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../stdatalog_gui/UI/resources.qrc">
+                  <iconset resource="../../UI/resources.qrc">
                    <normaloff>:/icons/icons/outline_save_white_18dp.png</normaloff>:/icons/icons/outline_save_white_18dp.png</iconset>
                  </property>
                 </widget>
@@ -270,7 +328,7 @@ QPushButton:disabled {
                   <string>Load</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../stdatalog_gui/UI/resources.qrc">
+                  <iconset resource="../../UI/resources.qrc">
                    <normaloff>:/icons/icons/outline_file_upload_white_18dp.png</normaloff>:/icons/icons/outline_file_upload_white_18dp.png</iconset>
                  </property>
                 </widget>
@@ -344,10 +402,10 @@ QRadioButton::indicator:checked {
 }</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_10">
                <property name="spacing">
@@ -377,10 +435,10 @@ QRadioButton::indicator:checked {
                   <string notr="true"/>
                  </property>
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::Shape::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_6">
                   <property name="spacing">
@@ -410,10 +468,10 @@ QRadioButton::indicator:checked {
                      <string notr="true"/>
                     </property>
                     <property name="frameShape">
-                     <enum>QFrame::StyledPanel</enum>
+                     <enum>QFrame::Shape::StyledPanel</enum>
                     </property>
                     <property name="frameShadow">
-                     <enum>QFrame::Raised</enum>
+                     <enum>QFrame::Shadow::Raised</enum>
                     </property>
                     <layout class="QHBoxLayout" name="horizontalLayout_8">
                      <property name="spacing">
@@ -459,7 +517,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Acquisition&lt;br /&gt;Folder&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                        </property>
                        <property name="textFormat">
-                        <enum>Qt::MarkdownText</enum>
+                        <enum>Qt::TextFormat::MarkdownText</enum>
                        </property>
                       </widget>
                      </item>
@@ -546,7 +604,7 @@ QPushButton:disabled {
                         <string>Browse</string>
                        </property>
                        <property name="icon">
-                        <iconset resource="../../../stdatalog_gui/UI/resources.qrc">
+                        <iconset resource="../../UI/resources.qrc">
                          <normaloff>:/icons/icons/baseline_folder_open_white_18dp.png</normaloff>:/icons/icons/baseline_folder_open_white_18dp.png</iconset>
                        </property>
                       </widget>
@@ -603,10 +661,10 @@ subfolder</string>
                      <string notr="true">border:transparent</string>
                     </property>
                     <property name="frameShape">
-                     <enum>QFrame::StyledPanel</enum>
+                     <enum>QFrame::Shape::StyledPanel</enum>
                     </property>
                     <property name="frameShadow">
-                     <enum>QFrame::Raised</enum>
+                     <enum>QFrame::Shadow::Raised</enum>
                     </property>
                     <layout class="QHBoxLayout" name="horizontalLayout">
                      <property name="leftMargin">
@@ -664,7 +722,7 @@ QPushButton:disabled {
                         <string/>
                        </property>
                        <property name="icon">
-                        <iconset resource="../../../stdatalog_gui/UI/resources.qrc">
+                        <iconset resource="../../UI/resources.qrc">
                          <normaloff>:/icons/icons/outline_autorenew_white_18dp.png</normaloff>:/icons/icons/outline_autorenew_white_18dp.png</iconset>
                        </property>
                       </widget>
@@ -681,20 +739,20 @@ QPushButton:disabled {
                   <string notr="true"/>
                  </property>
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Orientation::Vertical</enum>
                  </property>
                 </widget>
                </item>
-               <item alignment="Qt::AlignHCenter">
+               <item alignment="Qt::AlignmentFlag::AlignHCenter">
                 <widget class="QFrame" name="groupBox_save_load_buttons_2">
                  <property name="styleSheet">
                   <string notr="true">border-color: transparent;</string>
                  </property>
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::Shape::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_13">
                   <property name="leftMargin">
@@ -813,7 +871,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Errors in config&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="textFormat">
-                     <enum>Qt::MarkdownText</enum>
+                     <enum>Qt::TextFormat::MarkdownText</enum>
                     </property>
                    </widget>
                   </item>
@@ -838,7 +896,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
             </size>
            </property>
            <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
+            <enum>Qt::LayoutDirection::LeftToRight</enum>
            </property>
            <property name="styleSheet">
             <string notr="true">QGroupBox {
@@ -886,16 +944,16 @@ QCheckBox::indicator:checked:hover {
             <property name="bottomMargin">
              <number>6</number>
             </property>
-            <item alignment="Qt::AlignVCenter">
+            <item alignment="Qt::AlignmentFlag::AlignVCenter">
              <widget class="QFrame" name="frame_plot_settings">
               <property name="styleSheet">
                <string notr="true">border-color: transparent;</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_12">
                <property name="leftMargin">
@@ -1036,10 +1094,10 @@ QLineEdit:disabled {
                <string notr="true">border-color:transparent</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_11">
                <property name="spacing">
@@ -1085,7 +1143,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Plots Time&lt;br /&gt;Window&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="textFormat">
-                  <enum>Qt::MarkdownText</enum>
+                  <enum>Qt::TextFormat::MarkdownText</enum>
                  </property>
                 </widget>
                </item>
@@ -1107,24 +1165,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                   </size>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">QSpinBox {
-    color: rgb(255,255,255);
-    background-color: rgb(27, 29, 35);
-    border-radius: 5px;
-    border: 2px solid rgb(27, 29, 35);
-    padding-left: 10px;
-}
-QSpinBox:hover {
-    border: 2px solid rgb(58, 66, 81);
-}
-QSpinBox:focus {
-    border: 2px solid rgb(91, 101, 124);
-}
-QSpinBox:disabled {
-    color: rgb(60,60,60);
-	border: 2px solid rgb(32, 32, 32);
-}
-</string>
+                  <string notr="true"/>
                  </property>
                 </widget>
                </item>
@@ -1231,10 +1272,10 @@ QLineEdit:disabled {
                <string notr="true">border-color:transparent</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_4">
                <property name="spacing">
@@ -1261,10 +1302,10 @@ QLineEdit:disabled {
                   </size>
                  </property>
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::Shape::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_2">
                   <property name="spacing">
@@ -1310,7 +1351,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Component&lt;br /&gt;Name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="textFormat">
-                     <enum>Qt::MarkdownText</enum>
+                     <enum>Qt::TextFormat::MarkdownText</enum>
                     </property>
                    </widget>
                   </item>
@@ -1323,7 +1364,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                      </sizepolicy>
                     </property>
                     <property name="sizeAdjustPolicy">
-                     <enum>QComboBox::AdjustToContents</enum>
+                     <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
                     </property>
                    </widget>
                   </item>
@@ -1333,10 +1374,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
                <item>
                 <widget class="QFrame" name="frame_3">
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::Shape::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_7">
                   <property name="leftMargin">
@@ -1379,7 +1420,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Tag&lt;br /&gt;Label&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="textFormat">
-                     <enum>Qt::MarkdownText</enum>
+                     <enum>Qt::TextFormat::MarkdownText</enum>
                     </property>
                    </widget>
                   </item>
@@ -1395,7 +1436,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                      <string/>
                     </property>
                     <property name="sizeAdjustPolicy">
-                     <enum>QComboBox::AdjustToContents</enum>
+                     <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
                     </property>
                    </widget>
                   </item>
@@ -1414,7 +1455,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
 }</string>
               </property>
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
              </widget>
             </item>
@@ -1430,10 +1471,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
                <string notr="true">border-color:transparent;</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_5">
                <property name="spacing">
@@ -1460,10 +1501,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
                   </sizepolicy>
                  </property>
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::Shape::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_3">
                   <property name="leftMargin">
@@ -1502,7 +1543,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start time &lt;span style=&quot; font-size:7pt;&quot;&gt;[s]&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="textFormat">
-                     <enum>Qt::MarkdownText</enum>
+                     <enum>Qt::TextFormat::MarkdownText</enum>
                     </property>
                    </widget>
                   </item>
@@ -1524,30 +1565,13 @@ li.checked::marker { content: &quot;\2612&quot;; }
                      </size>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">QSpinBox {
-    color: rgb(255,255,255);
-    background-color: rgb(27, 29, 35);
-    border-radius: 5px;
-    border: 2px solid rgb(27, 29, 35);
-    padding-left: 10px;
-}
-QSpinBox:hover {
-    border: 2px solid rgb(58, 66, 81);
-}
-QSpinBox:focus {
-    border: 2px solid rgb(91, 101, 124);
-}
-QSpinBox:disabled {
-    color: rgb(60,60,60);
-	border: 2px solid rgb(32, 32, 32);
-}
-</string>
+                     <string notr="true"/>
                     </property>
                     <property name="maximum">
                      <number>10000</number>
                     </property>
                     <property name="stepType">
-                     <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+                     <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
                     </property>
                    </widget>
                   </item>
@@ -1563,10 +1587,10 @@ QSpinBox:disabled {
                   </sizepolicy>
                  </property>
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::Shape::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_6">
                   <property name="leftMargin">
@@ -1599,7 +1623,7 @@ QSpinBox:disabled {
                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;End time &lt;span style=&quot; font-size:7pt;&quot;&gt;[s]&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="textFormat">
-                     <enum>Qt::MarkdownText</enum>
+                     <enum>Qt::TextFormat::MarkdownText</enum>
                     </property>
                    </widget>
                   </item>
@@ -1621,24 +1645,7 @@ QSpinBox:disabled {
                      </size>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">QSpinBox {
-    color: rgb(255,255,255);
-    background-color: rgb(27, 29, 35);
-    border-radius: 5px;
-    border: 2px solid rgb(27, 29, 35);
-    padding-left: 10px;
-}
-QSpinBox:hover {
-    border: 2px solid rgb(58, 66, 81);
-}
-QSpinBox:focus {
-    border: 2px solid rgb(91, 101, 124);
-}
-QSpinBox:disabled {
-    color: rgb(60,60,60);
-	border: 2px solid rgb(32, 32, 32);
-}
-</string>
+                     <string notr="true"/>
                     </property>
                     <property name="minimum">
                      <number>-1</number>
@@ -1647,7 +1654,7 @@ QSpinBox:disabled {
                      <number>10000</number>
                     </property>
                     <property name="stepType">
-                     <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+                     <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
                     </property>
                     <property name="value">
                      <number>0</number>
@@ -1663,7 +1670,7 @@ QSpinBox:disabled {
             <item>
              <widget class="Line" name="line_2">
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
              </widget>
             </item>
@@ -1679,10 +1686,10 @@ QSpinBox:disabled {
                <string notr="true">border-color:transparent</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_8">
                <property name="spacing">
@@ -1822,7 +1829,7 @@ acquisition</string>
   </layout>
  </widget>
  <resources>
-  <include location="../../../stdatalog_gui/UI/resources.qrc"/>
+  <include location="../../UI/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

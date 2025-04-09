@@ -18,7 +18,7 @@ The package offers a set of base classes and utilities to create custom GUI appl
 - Device discovery and connection
 - Device configuration and control
 - Application logging and error management display
-- Support for multiple platforms (Windows, Linux)
+- Support for multiple platforms (Windows, Linux, macOS)
 - Compatible with Python 3.10 to 3.12
 - Communication with various hardware devices
 
@@ -29,12 +29,12 @@ NOTE: Be sure to satisfy the requirements before installing the package ([see Re
 
 On Windows:
 ```sh
-python -m pip install dist\stdatalog_gui-1.0.0-py3-none-any.whl
+python -m pip install dist\stdatalog_gui-1.1.0-py3-none-any.whl
 ```
 
-On Linux:
+On Linux/macOS:
 ```sh
-python3 -m pip install dist/stdatalog_gui-1.0.0-py3-none-any.whl
+python3 -m pip install dist/stdatalog_gui-1.1.0-py3-none-any.whl
 ```
 
 The package could also be installed as part of the **[STDATALOG-PYSDK](https://github.com/STMicroelectronics/stdatalog-pysdk)** by launching the SDK installation script from the SDK root folder:
@@ -44,7 +44,7 @@ On Windows:
 .\STDATALOG-PYSDK_install.bat
 ```
 
-On Linux:
+On Linux/macOS:
 ```sh
 ./STDATALOG-PYSDK_install.sh
 ```
@@ -57,11 +57,11 @@ The package requires the following dependencies:
 - **[stdatalog_pnpl](https://github.com/STMicroelectronics/stdatalog_pnpl)**
 - **[stdatalog_core](https://github.com/STMicroelectronics/stdatalog_core)**
 - **[stdatalog_dtk](https://github.com/STMicroelectronics/stdatalog_dtk)**
-- numpy==1.26.4
-- pyqtgraph
+- numpy==2.2.4
+- pyqtgraph==0.13.7
 - setuptools
-- PySide6==6.6.1
-- pyaudio
+- pyaudio==0.2.14
+- PySide6
 
 ## Usage
 Here is a basic example of how to use the `stdatalog_gui` package to create a simple GUI application (HSD_GUI) for high-speed data logging:

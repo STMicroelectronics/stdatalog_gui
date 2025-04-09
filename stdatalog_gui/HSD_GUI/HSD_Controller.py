@@ -43,6 +43,7 @@ from stdatalog_gui.Utils.PlotParams import AnomalyDetectorModelPlotParams, Class
 from stdatalog_core.HSD.HSDatalog import HSDatalog
 from stdatalog_core.HSD_link.HSDLink import HSDLink
 from stdatalog_core.HSD_link.HSDLink_v1 import HSDLink_v1
+from stdatalog_core.HSD_link.HSDLink_v2 import HSDLink_v2_Serial
 from stdatalog_dtk.HSD_DataToolkit import HSD_DataToolkit
 from stdatalog_core.HSD.utils.type_conversion import TypeConversion
 
@@ -208,6 +209,51 @@ class HSD_Controller(STDTDL_Controller):
                     if self.sensor_data_file is not None:
                         self.sensor_data_file.write(sensor_data[1])
 
+    
+    class ReadSerialDataThread(Thread):
+        def __init__(self, hsd_link):
+            Thread.__init__(self)
+            self.hsd_link = hsd_link
+            self.name = "data_reader_thread"
+            self.stop_event = Event()
+            self.data_reader_params = None
+            self.sig_streaming_error = None
+            self.prev_cnts = []
+
+        def set_data_reader_params(self, data_reader_params):
+            self.data_reader_params = data_reader_params
+            self.prev_cnts = [0]*len(data_reader_params)
+        
+        def set_sig_streaming_error(self, sig_streaming_error):
+            self.sig_streaming_error = sig_streaming_error
+
+        def run(self):
+            while not self.stop_event.is_set():
+                pkt = self.hsd_link.get_serial_data()
+                if pkt:
+                    data = pkt.data
+                    if pkt.header.cr == 0 and len(data) > 0:
+                        curr_cnt = struct.unpack("=i", data[0:4])[0]
+                        data_ch = pkt.header.ch_num
+                        diff = curr_cnt - self.prev_cnts[data_ch]
+                        payload_len = len(data)-4
+                        if curr_cnt != 0 and diff != payload_len:
+                            log.error("Streaming error occoured!")
+                        else:
+                            comp_name = self.data_reader_params[data_ch].get("comp_name")
+                            self.data_reader_params[data_ch].get("data_reader").feed_data(DataClass(comp_name, data[4:]))
+                            file = self.data_reader_params[data_ch].get("file")
+                            if not file.closed:
+                                file.write(data)
+                        self.prev_cnts[data_ch] = curr_cnt
+
+            self.hsd_link.flush()
+            time.sleep(1)
+            self.data_reader_params[0].get("file").close()
+
+        def stop(self):
+            self.stop_event.set()
+    
     def __init__(self, parent=None):
         super().__init__(parent)
         # HSD
@@ -234,6 +280,10 @@ class HSD_Controller(STDTDL_Controller):
         self.mc_speed_req_name = "speed"
         #DataToolkit
         self.dt_plugins_folder_path = None
+        #Serial communication
+        self.data_reader_params = {}
+        self.MAX_HSD_SRL_BANDWIDTH = 6000000
+        self.MAX_HSD_BANDWIDTH = self.MAX_HSD_SRL_BANDWIDTH
 
         # TODO: Next version --> Hotplug events notification support
         # self.plugged_flag = False
@@ -290,6 +340,8 @@ class HSD_Controller(STDTDL_Controller):
                     return d_alias
         elif isinstance(self.hsd_link, HSDLink_v1):
             return "{} - [{}] {} v{}".format(device.device_info.alias, device.device_info.part_number, device.device_info.fw_name, device.device_info.fw_version)
+        elif self.is_hsd_link_serial():
+            return "[{}] - {}".format(device.device, device.description)
     
     def enable_start_log_button(self):
         self.sig_lock_start_button.emit(False, "")
@@ -376,6 +428,13 @@ class HSD_Controller(STDTDL_Controller):
             json_file.close()
         super().load_local_device_template(dev_template_json)
         self.hsd_link.set_device_template(dev_template_json)
+
+    def add_custom_device_template(self, input_dt_file_path, board_id = 255, fw_id = 255):
+        with open(input_dt_file_path, 'r', encoding='utf-8') as json_file:
+            dev_template_json = json.load(json_file)
+            dtdl_model_name = os.path.splitext(os.path.basename(input_dt_file_path))[0]
+            json_file.close()
+            super().add_dtdl_model(board_id, fw_id, dtdl_model_name, str(dev_template_json))
 
     def is_sensor_enabled(self, comp_name, d_id = 0):
         return self.hsd_link.get_sensor_enable(d_id, comp_name)
@@ -717,6 +776,8 @@ class HSD_Controller(STDTDL_Controller):
         if type(self.hsd_link) == HSDLink_v1:
             res = self.hsd_link.start_log(self.device_id, save_files=self.save_files_flag)
         else:
+            if self.is_hsd_link_serial():
+                self.start_plots() #In case of serial communication, the plots are started before the log!
             res = self.hsd_link.start_log(self.device_id, interface, acq_folder=acq_folder, sub_folder=sub_folder, save_files=self.save_files_flag)
         if res:
             self.sig_logging.emit(True,interface)
@@ -759,6 +820,148 @@ class HSD_Controller(STDTDL_Controller):
     def set_save_files_flag(self, status):
         self.save_files_flag = status
 
+    def __start_component_plot_serial(self, comp_status, comp_name):
+        c_enable = comp_status["enable"] 
+            
+        if c_enable == True:
+            c_stream_id = comp_status.get("stream_id")
+            if c_stream_id is not None:
+                sensor_data_file_path = os.path.join(self.hsd_link.get_acquisition_folder(),(str(comp_name) + ".dat"))
+                sensor_data_file = open(sensor_data_file_path, "wb+")
+                self.sensor_data_files.append(sensor_data_file)
+                
+                c_type = comp_status.get("c_type")
+                serial_dps = comp_status.get("serial_dps")#TODO check if it is necessary
+                dimensions = comp_status.get("dim", 1)
+                sensitivity = comp_status.get("sensitivity", 1)
+                spts = comp_status.get("samples_per_ts", 1)
+                sample_size = TypeConversion.check_type_length(comp_status["data_type"])
+                data_format = TypeConversion.get_format_char(comp_status["data_type"])
+                
+                interleaved_data = True
+                raw_flat_data = False
+
+                if c_type == ComponentType.SENSOR.value:
+                    if not isinstance(spts, int):
+                        spts = spts["val"] if spts and "val" in spts else spts
+                    s_category = comp_status.get("sensor_category")#TODO check if it is necessary
+                    
+                elif c_type == ComponentType.ALGORITHM.value:
+                    spts = 0 #spts override (no timestamps in algorithms @ the moment)
+                    algorithm_type = comp_status.get("algorithm_type")
+                    if algorithm_type == DTDLUtils.AlgorithmTypeEnum.IALGORITHM_TYPE_ANOMALY_DETECTOR.value:
+                        dimensions = comp_status["dim"]                                
+                    if algorithm_type == DTDLUtils.AlgorithmTypeEnum.IALGORITHM_TYPE_FFT.value:
+                        dimensions = comp_status.get("fft_length")                                    
+                    if algorithm_type == DTDLUtils.AlgorithmTypeEnum.IALGORITHM_TYPE_CLASSIFIER.value:
+                        # Get  ai classifier sub properties
+                        ai_classifier_sub_properties = comp_status[DTDLUtils.ST_BLE_STREAM]
+                        dimensions = 0
+                        for t in ai_classifier_sub_properties:
+                            if t != 'id':
+                            # Check enable condition
+                                t_enabled = ai_classifier_sub_properties[t].get("enable")
+                                if t_enabled:
+                                    #get format 
+                                    t_format = ai_classifier_sub_properties[t].get("format")
+                                    dimensions += TypeConversion.check_type_length(t_format)
+                    interleaved_data = False
+
+                if "_ispu" in comp_name:
+                    data_format = "b"
+                    dimensions = 64
+                    sample_size = 1
+                    raw_flat_data = True
+                
+                if s_category is not None:
+                    if s_category == DTDLUtils.SensorCategoryEnum.ISENSOR_CLASS_RANGING.value:
+                        raw_flat_data = True
+
+                dr = HSD_Controller.DataReader(self, self.add_data_to_a_plot, comp_name, spts, dimensions, sample_size, data_format, sensitivity, interleaved_data, raw_flat_data)
+                self.data_readers.append(dr)
+
+                self.data_reader_params[c_stream_id] = {
+                    "comp_name":comp_name,
+                    "data_reader":dr,
+                    "file":sensor_data_file
+                }
+
+    def __start_component_plots_hsddll(self, comp_status, comp_name, create_thread = False):
+        c_enable = comp_status["enable"] 
+                
+        if c_enable == True:
+            if self.save_files_flag:
+                sensor_data_file_path = os.path.join(self.hsd_link.get_acquisition_folder(),(str(comp_name) + ".dat"))
+                sensor_data_file = open(sensor_data_file_path, "wb+")
+                self.sensor_data_files.append(sensor_data_file)
+            stopFlag = Event()
+            self.threads_stop_flags.append(stopFlag)
+            
+            c_type = comp_status.get("c_type")
+            usb_dps = comp_status.get("usb_dps")
+            dimensions = comp_status.get("dim", 1)
+            sensitivity = comp_status.get("sensitivity", 1)
+            spts = comp_status.get("samples_per_ts", 1)
+            sample_size = TypeConversion.check_type_length(comp_status["data_type"])
+            data_format = TypeConversion.get_format_char(comp_status["data_type"])
+            s_category = None
+
+            interleaved_data = True
+            raw_flat_data = False
+
+            if c_type == ComponentType.SENSOR.value:
+                if not isinstance(spts, int):
+                    spts = spts["val"] if spts and "val" in spts else spts
+                s_category = comp_status.get("sensor_category")
+                create_thread = True
+                
+                
+            elif c_type == ComponentType.ALGORITHM.value:
+                spts = 0 #spts override (no timestamps in algorithms @ the moment)
+                algorithm_type = comp_status.get("algorithm_type")
+                if algorithm_type == DTDLUtils.AlgorithmTypeEnum.IALGORITHM_TYPE_ANOMALY_DETECTOR.value:
+                    dimensions = comp_status["dim"]                                
+                if algorithm_type == DTDLUtils.AlgorithmTypeEnum.IALGORITHM_TYPE_FFT.value:
+                    dimensions = comp_status.get("fft_length")                                    
+                if algorithm_type == DTDLUtils.AlgorithmTypeEnum.IALGORITHM_TYPE_CLASSIFIER.value:
+                    # Get  ai classifier sub properties
+                    ai_classifier_sub_properties = comp_status[DTDLUtils.ST_BLE_STREAM]
+                    dimensions = 0
+                    for t in ai_classifier_sub_properties:
+                        if t != 'id':
+                        # Check enable condition
+                            t_enabled = ai_classifier_sub_properties[t].get("enable")
+                            if t_enabled:
+                                #get format 
+                                t_format = ai_classifier_sub_properties[t].get("format")
+                                dimensions += TypeConversion.check_type_length(t_format)
+                interleaved_data = False
+                create_thread = True             
+            
+
+            if "_ispu" in comp_name:
+                data_format = "b"
+                dimensions = 64
+                sample_size = 1
+                raw_flat_data = True
+                create_thread = True
+            
+            if s_category is not None:
+                if s_category == DTDLUtils.SensorCategoryEnum.ISENSOR_CLASS_RANGING.value:
+                    raw_flat_data = True
+                create_thread = True
+            
+            if create_thread == True:
+                dr = HSD_Controller.DataReader(self, self.add_data_to_a_plot, comp_name, spts, dimensions, sample_size, data_format, sensitivity, interleaved_data, raw_flat_data)
+                self.data_readers.append(dr)
+
+                if self.save_files_flag:
+                    thread = self.SensorAcquisitionThread(stopFlag, self.hsd_link, dr, self.device_id, comp_name, sensor_data_file, usb_dps, self.sig_streaming_error)
+                else:
+                    thread = self.SensorAcquisitionThread(stopFlag, self.hsd_link, dr, self.device_id, comp_name, None, usb_dps, self.sig_streaming_error)
+                thread.start()
+                self.sensors_threads.append(thread)
+
     def start_plots(self):
         if self.dt_plugins_folder_path is not None:
             # Initialize DataToolkit
@@ -768,7 +971,7 @@ class HSD_Controller(STDTDL_Controller):
 
         for s in self.plot_widgets:
             s_plot = self.plot_widgets[s]
-            create_thread = False
+            # create_thread = False
             
             if type(self.hsd_link) == HSDLink_v1:
                     if self.save_files_flag:
@@ -790,89 +993,22 @@ class HSD_Controller(STDTDL_Controller):
                     thread.start()
                     self.sensors_threads.append(thread)
             else:
-                c_status = self.get_component_status(s_plot.comp_name)
-                self.components_status[s_plot.comp_name] = c_status[s_plot.comp_name]
-                c_status_value = c_status[s_plot.comp_name]
+                c_name = s_plot.comp_name
+                c_status = self.get_component_status(c_name)
+                self.components_status[c_name] = c_status[c_name]
+                c_status_value = c_status[c_name]
                 
-                c_enable = c_status_value["enable"] 
-                
-                if c_enable == True:
-                    if self.save_files_flag:
-                        sensor_data_file_path = os.path.join(self.hsd_link.get_acquisition_folder(),(str(s_plot.comp_name) + ".dat"))
-                        sensor_data_file = open(sensor_data_file_path, "wb+")
-                        self.sensor_data_files.append(sensor_data_file)
-                    stopFlag = Event()
-                    self.threads_stop_flags.append(stopFlag)
-                    
-                    c_type = c_status_value.get("c_type")
-                    usb_dps = c_status_value.get("usb_dps")
-                    dimensions = c_status_value.get("dim", 1)
-                    sensitivity = c_status_value.get("sensitivity", 1)
-                    spts = c_status_value.get("samples_per_ts", 1)
-                    sample_size = TypeConversion.check_type_length(c_status_value["data_type"])
-                    data_format = TypeConversion.get_format_char(c_status_value["data_type"])
-                    s_category = None
-
-                    interleaved_data = True
-                    raw_flat_data = False
-
-                    if c_type == ComponentType.SENSOR.value:
-                        if not isinstance(spts, int):
-                            spts = spts["val"] if spts and "val" in spts else spts
-                        s_category = c_status_value.get("sensor_category")
-                        create_thread = True
-                        
-                        
-                    elif c_type == ComponentType.ALGORITHM.value:
-                        spts = 0 #spts override (no timestamps in algorithms @ the moment)
-                        algorithm_type = c_status_value.get("algorithm_type")
-                        if algorithm_type == DTDLUtils.AlgorithmTypeEnum.IALGORITHM_TYPE_ANOMALY_DETECTOR.value:
-                            dimensions = c_status_value["dim"]                                
-                        if algorithm_type == DTDLUtils.AlgorithmTypeEnum.IALGORITHM_TYPE_FFT.value:
-                            dimensions = c_status_value.get("fft_length")                                    
-                        if algorithm_type == DTDLUtils.AlgorithmTypeEnum.IALGORITHM_TYPE_CLASSIFIER.value:
-                            # Get ai classifier content
-                            ai_classifier_contents = c_status[DTDLUtils.AI_CLASSIFIER_COMP_NAME]
-                            # Get  ai classifier sub properties
-                            ai_classifier_sub_properties = ai_classifier_contents[DTDLUtils.ST_BLE_STREAM]
-                            dimensions = 0
-                            for t in ai_classifier_sub_properties:
-                                if t != 'id':
-                                # Check enable condition
-                                    t_enabled = ai_classifier_sub_properties[t].get("enable")
-                                    if t_enabled:
-                                        #get format 
-                                        t_format = ai_classifier_sub_properties[t].get("format")
-                                        dimensions += TypeConversion.check_type_length(t_format)
-                        interleaved_data = False
-                        create_thread = True             
-                    
-
-                    if "_ispu" in s_plot.comp_name:
-                        data_format = "b"
-                        dimensions = 64
-                        sample_size = 1
-                        raw_flat_data = True
-                        create_thread = True
-                    
-                    if s_category is not None:
-                        if s_category == DTDLUtils.SensorCategoryEnum.ISENSOR_CLASS_RANGING.value:
-                            raw_flat_data = True
-                        create_thread = True
-                    
-                    if create_thread == True:
-                        dr = HSD_Controller.DataReader(self, self.add_data_to_a_plot, s_plot.comp_name, spts, dimensions, sample_size, data_format, sensitivity, interleaved_data, raw_flat_data)
-                        self.data_readers.append(dr)
-
-                        if self.save_files_flag:
-                            thread = self.SensorAcquisitionThread(stopFlag, self.hsd_link, dr, self.device_id, s_plot.comp_name, sensor_data_file, usb_dps, self.sig_streaming_error)
-                        else:
-                            thread = self.SensorAcquisitionThread(stopFlag, self.hsd_link, dr, self.device_id, s_plot.comp_name, None, usb_dps, self.sig_streaming_error)
-                        thread.start()
-                        self.sensors_threads.append(thread)
+                if self.is_hsd_link_serial():
+                    self.__start_component_plot_serial(c_status_value, c_name)
+                else:
+                    self.__start_component_plots_hsddll(c_status_value, c_name)
+        if self.is_hsd_link_serial():
+            self.sensors_threads[0].set_data_reader_params(self.data_reader_params)
 
     def stop_log(self, interface=1):
         if self.is_logging == True:
+            if self.is_hsd_link_serial():
+                self.stop_plots() #In case of serial communication, the plots need to be stopped before stopping the log!
             self.hsd_link.stop_log(self.device_id)
             if type(self.hsd_link) == HSDLink_v1:
                 if self.save_files_flag:
@@ -1034,11 +1170,25 @@ class HSD_Controller(STDTDL_Controller):
     def add_data_to_a_plot(self, data:DataClass):
         self.plot_widgets[data.comp_name].add_data(data.data)
 
-    def connect_to(self, d_id:int, d_text:str = None):
-        self.sig_device_connected.emit(True)
-        self.device_id = d_id
+    def connect_to(self, d_id:int, d_text:str = None, com_speed:int = None):
+        if self.is_hsd_link_serial():
+            com_id = d_text.split("]")[0][1:]
+            is_open = self.hsd_link.open(com_id, com_speed)
+            if is_open:
+                self.sig_device_connected.emit(True)
+            else:
+                log.error("COM port {} not connected!".format(com_id))
+            
+            # If hsd_link being used is a serial link, start a thread to read data from the serial port
+            self.serial_thread_stop_flag = Event()
+            serial_thread = self.ReadSerialDataThread(self.hsd_link)
+            serial_thread.start()
+            self.sensors_threads.append(serial_thread)
+        else:
+            self.sig_device_connected.emit(True)
+            self.device_id = d_id
 
-    def disconnect(self):
+    def disconnect(self): #TODO add serial link disconnection
         self.sig_device_connected.emit(False)
         for pw in self.plot_widgets:
             self.plot_widgets[pw].deleteLater()
@@ -1293,4 +1443,9 @@ class HSD_Controller(STDTDL_Controller):
     def remove_dt_plugins_folder(self):
         if self.dt_plugins_folder_path in sys.path:
             sys.path.remove(self.dt_plugins_folder_path)
+
+    def is_hsd_link_serial(self):
+        if self.hsd_link is None:
+            return False
+        return isinstance(self.hsd_link, HSDLink_v2_Serial)
 

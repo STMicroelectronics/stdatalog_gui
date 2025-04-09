@@ -237,7 +237,7 @@ class ComponentWidget(QWidget):
                                     resp_fields.append(CommandField(p.response.name, p.response.schema.value, field_label, ""))
                                     widget = CommandWidget(self.controller, comp_name, self.comp_sem_type, p.name, None, None, None, resp_fields, pc_display_name)
                     else:
-                        widget = CommandWidget(self.controller, comp_name, self.comp_sem_type, p.name, None, req_fields, pc_display_name)
+                        widget = CommandWidget(self.controller, comp_name, self.comp_sem_type, p.name, None, req_fields, command_label=pc_display_name)    
                     
                 except AttributeError:
                     pass

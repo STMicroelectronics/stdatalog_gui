@@ -25,6 +25,7 @@ from PySide6.QtCore import Slot
 from stdatalog_gui.STDTDL_ExperimentalFeaturesPage import STDTDL_ExperimentalFeaturesPage
 from stdatalog_gui.UI.styles import STDTDL_MenuButton
 from stdatalog_gui.UI.Ui_MainWindow import Ui_MainWindow
+from stdatalog_gui.Widgets.DeviceTemplateLoadingWidget import DeviceTemplateLoadingWidget
 from stdatalog_gui.Widgets.LoadingWindow import LoadingWindow
 from stdatalog_gui.Widgets.ConnectionWidget import ConnectionWidget
 from stdatalog_gui.Widgets.AboutDialog import AboutDialog
@@ -68,6 +69,7 @@ class STDTDL_MainWindow(QMainWindow):
         # Connection page
         self.connection_page = self.findChild(QWidget, "page_connection")
         frame_log_file_options = self.findChild(QFrame, "frame_log_file_options")
+        frame_dt_settings = self.findChild(QFrame, "frame_dt_settings")
         
         app_log_file_label = QLabel("Enable application log file")
         app_log_file_label.setStyleSheet("font: 700 10pt \"Segoe UI\";")
@@ -76,8 +78,19 @@ class STDTDL_MainWindow(QMainWindow):
         frame_log_file_options.layout().addWidget(app_log_file_toggle_button)
         app_log_file_toggle_button.toggled.connect(self.app_log_file_button_toggled)
 
+        adv_settings_label = QLabel("Advanced Settings")
+        adv_settings_label.setStyleSheet("font: 700 10pt \"Segoe UI\";")
+        frame_dt_settings.layout().addWidget(adv_settings_label)
+        adv_settings_toggle_button = ToggleButton()
+        frame_dt_settings.layout().addWidget(adv_settings_toggle_button)
+        adv_settings_toggle_button.toggled.connect(self.adv_settings_button_toggled)
+
         self.connection_widget = ConnectionWidget(self.controller,self)
+        self.device_model_loading_widget = DeviceTemplateLoadingWidget(self.controller, self)
+        self.device_model_loading_widget.setVisible(False)
+
         self.connection_page.layout().addWidget(self.connection_widget)
+        self.connection_page.layout().addWidget(self.device_model_loading_widget)
 
         self.connection_page.layout().addStretch()
         
@@ -217,3 +230,7 @@ class STDTDL_MainWindow(QMainWindow):
     def app_log_file_button_toggled(self, status):
         self.menu_btn_show_log_file.setVisible(status)
         logger.setup_applevel_logger(is_debug=status, file_name= "{}_app_debug.log".format(datetime.today().strftime('%Y%m%d_%H_%M_%S')))
+
+    @Slot()
+    def adv_settings_button_toggled(self, status):
+        self.device_model_loading_widget.setVisible(status)

@@ -49,4 +49,7 @@ class DeviceTemplateLoadingWidget(QWidget):
         filepath = QFileDialog.getOpenFileName(filter=json_filter)
         self.input_file_path = filepath[0]
         self.dt_value.setText(self.input_file_path)
-        self.controller.load_local_device_template(self.input_file_path)
+        # self.controller.load_local_device_template(self.input_file_path)
+        self.controller.add_custom_device_template(self.input_file_path)
+
+        self.controller.refresh()
