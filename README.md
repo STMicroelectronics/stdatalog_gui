@@ -62,6 +62,9 @@ The package requires the following dependencies:
 - setuptools
 - pyaudio==0.2.14
 - PySide6
+	- 6.9.0 on Windows, Linux not aarch64 machines and macOS arm64 machines
+	- 6.8.0.2 on Linux aarch64 machines
+	- 6.7.3 on macOS x86_64 machines
 
 ## Usage
 Here is a basic example of how to use the `stdatalog_gui` package to create a simple GUI application (HSD_GUI) for high-speed data logging:
