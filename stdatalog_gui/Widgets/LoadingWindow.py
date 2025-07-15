@@ -34,6 +34,10 @@ class StaticLoadingWindow():
         
         self.dialog.setWindowTitle(title)
         self.dialog.setModal(True)
+        # Remove the X button by customizing window flags
+        self.dialog.setWindowFlags(
+            Qt.WindowType.Dialog | Qt.WindowType.CustomizeWindowHint | Qt.WindowType.WindowTitleHint
+        )
         style = '''
             QDialog
             {

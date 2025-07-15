@@ -22,8 +22,6 @@ import time
 from stdatalog_gui.UI.styles import STDTDL_Label, STDTDL_PushButton
 from stdatalog_gui.Widgets.LoadingWindow import StaticLoadingWindow
 
-import matplotlib.pyplot as plt
-
 from PySide6.QtCore import Slot, Qt
 from PySide6.QtWidgets import QFrame, QSpinBox, QComboBox, QPushButton, QCheckBox, QFileDialog, QGroupBox, QRadioButton, QLabel, QLineEdit
 from PySide6.QtUiTools import QUiLoader
@@ -296,7 +294,6 @@ class HSDLogControlWidget(ComponentWidget):
     @Slot()
     def s_offline_plots_completed(self):
         self.loading_window.loadingDone()
-        plt.show()
 
     @Slot()
     def s_is_autologging_stopping(self, status):
@@ -460,7 +457,7 @@ class HSDLogControlWidget(ComponentWidget):
                 tags_label_list = self.hsd.get_acquisition_label_classes()
                 self.tags_label_combo.clear()
                 self.tags_label_combo.addItem("None")
-                if tags_label_list is not None:
+                if tags_label_list is not None and len(tags_label_list) > 0:
                     for t in tags_label_list:
                         self.tags_label_combo.addItem(t)
                     self.tags_label_combo.setCurrentIndex(0)

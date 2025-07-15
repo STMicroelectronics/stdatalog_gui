@@ -6,6 +6,7 @@ setup.py
 stdatalog_gui/LICENSE.md
 stdatalog_gui/STDTDL_Controller.py
 stdatalog_gui/STDTDL_DeviceConfigPage.py
+stdatalog_gui/STDTDL_ExperimentalFeaturesPage copy.py
 stdatalog_gui/STDTDL_ExperimentalFeaturesPage.py
 stdatalog_gui/STDTDL_MainWindow.py
 stdatalog_gui/__init__.py
@@ -93,6 +94,8 @@ stdatalog_gui/UI/acq_list_item_widget.ui
 stdatalog_gui/UI/classifier_output_widget.ui
 stdatalog_gui/UI/component_config_widget.ui
 stdatalog_gui/UI/connection_widget.ui
+stdatalog_gui/UI/create_dataset_dialog.ui
+stdatalog_gui/UI/dataset_list_item_widget.ui
 stdatalog_gui/UI/device_template_load_widget.ui
 stdatalog_gui/UI/graph_widget.ui
 stdatalog_gui/UI/mc_classifier_output_widget.ui

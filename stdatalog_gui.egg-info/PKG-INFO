@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: stdatalog_gui
-Version: 1.1.0
+Version: 1.2.0
 Summary: STMicroelectronics UI Toolkit based on DTDL and PySide6.
 Home-page: https://github.com/STMicroelectronics/stdatalog_gui
 Author: SRA-ASP
@@ -13,15 +13,16 @@ Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
 Classifier: Topic :: Software Development :: Embedded Systems
 Description-Content-Type: text\markdown
 License-File: LICENSE.md
-Requires-Dist: stdatalog_pnpl==1.1.0
-Requires-Dist: stdatalog_core==1.1.0
-Requires-Dist: stdatalog_dtk==1.1.0
+Requires-Dist: stdatalog_pnpl==1.2.0
+Requires-Dist: stdatalog_core==1.2.0
+Requires-Dist: stdatalog_dtk==1.2.0
 Requires-Dist: numpy==2.2.4
 Requires-Dist: pyqtgraph==0.13.7
-Requires-Dist: setuptools
+Requires-Dist: setuptools<81
 Requires-Dist: pyaudio==0.2.14
 Requires-Dist: PySide6==6.9.0; platform_system == "Windows"
 Requires-Dist: PySide6==6.9.0; platform_system == "Linux" and platform_machine != "aarch64"

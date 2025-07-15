@@ -72,6 +72,8 @@ class STDTDL_Controller(QObject):
     sig_autologging_is_stopping = Signal(bool)
     sig_logging = Signal(bool, int)
     sig_detecting = Signal(bool)
+
+    sig_pnpl_response_received = Signal(str, str)
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -94,12 +96,6 @@ class STDTDL_Controller(QObject):
 
     def set_plots_layout(self, plots_layout):
         self.plots_layout = plots_layout
-    
-    def add_dtdl_model(self, board_id, fw_id, dtdl_model_name, dtdl_model_json):
-        DeviceTemplateManager.add_dtdl_model(board_id, fw_id, dtdl_model_name, dtdl_model_json)
-    
-    def query_dtdl_model(self, board_id, fw_id):
-        return DeviceTemplateManager.query_dtdl_model(board_id, fw_id)
         
     def load_local_device_template(self, dev_template_json):  
         self.__dt_manager = DeviceTemplateManager(dev_template_json)

@@ -60,34 +60,13 @@ class HSD_MC_Controller(HSD_Controller):
                     spts = c_status_value.get("samples_per_ts", 1)
                     sample_size = TypeConversion.check_type_length(c_status_value["data_type"])
                     data_format = TypeConversion.get_format_char(c_status_value["data_type"])
+                    spts = c_status_value.get("samples_per_ts", 1)
                     interleaved_data = True
                     raw_flat_data = False
-                    spts = 1
-                    dimensions = 0
+                    dimensions = c_status_value.get("dim", 1)
                     sensitivity = 1
                         
-                    if s_plot.comp_name == dtdl_utils.MC_SLOW_TELEMETRY_COMP_NAME:
-                        # Get slow telemetries content:
-                        slow_telemetries_contents = c_status[DTDLUtils.MC_SLOW_TELEMETRY_COMP_NAME]
-                        # Get slow telemetries sub properties
-                        slow_telemetries_sub_properties = slow_telemetries_contents[DTDLUtils.ST_BLE_STREAM]
-                        for t in slow_telemetries_sub_properties:
-                            if t != 'id':
-                            # Check enable condition
-                                t_enabled = slow_telemetries_sub_properties[t].get("enable")
-                                if t_enabled:
-                                    self.plot_widgets[s_plot.comp_name].plots_params.plots_params_dict[t].enabled = t_enabled
-                                    if t_enabled:
-                                        dimensions += 1
-                    
-                    elif s_plot.comp_name == DTDLUtils.MC_FAST_TELEMETRY_COMP_NAME:
-                        fast_telemetries_contents = [ftc for ftc in self.components_dtdl[s_plot.comp_name].contents if self.get_description_string(ftc) == DTDLUtils.MC_FAST_TELEMETRY_STRING]
-                        for t in fast_telemetries_contents:
-                            t_display_name = t.display_name if isinstance(t.display_name, str) else t.display_name.en
-                            t_enabled = c_status_value[t.name].get("enabled")
-                            self.plot_widgets[s_plot.comp_name].plots_params.plots_params_dict[t_display_name].enabled = t_enabled
-
-                        dimensions = c_status_value["dim"]
+                    if s_plot.comp_name == DTDLUtils.MC_FAST_TELEMETRY_COMP_NAME:
                         interleaved_data = False
 
                     

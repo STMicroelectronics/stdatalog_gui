@@ -27,7 +27,30 @@ The package is part of the **[STDATALOG-PYSDK](https://github.com/STMicroelectro
 # Update History
 
 ::: {.collapse}
-<input type="checkbox" id="collapse-section2" checked aria-hidden="true">
+<input type="checkbox" id="collapse-section3" checked aria-hidden="true">
+<label for="collapse-section3" aria-hidden="true">v1.2.0 / 20-Jun-25</label>
+<div>
+
+
+## Main Changes
+
+### Maintenance Release
+
+- Added support to Python 3.13
+- Removed dependency from matplotlib in HSD_GUI
+- Updated ACTUATOR components and properties management, aligned to new fast and slow telemetry DTDL components
+- New USB catalog management: sync/update with the online catalog
+- Added new dialog to show received PnPL_Error
+- Moved query_dtdl_model from DeviceTemplateManager to DeviceCatalogManager class
+- Aligned to staiotcraft python latest library version
+- Fixed plot threads creation and shutdown + join stopped sensors acquisition threads
+
+
+</div>
+:::
+
+::: {.collapse}
+<input type="checkbox" id="collapse-section2" aria-hidden="true">
 <label for="collapse-section2" aria-hidden="true">v1.1.0 / 9-Apr-25</label>
 <div>
 

@@ -28,6 +28,7 @@ from enum import Enum
 from PySide6.QtCore import Qt, Signal, QThread, QObject
 from PySide6.QtWidgets import QFileDialog
 
+from stdatalog_pnpl.DTDL.device_template_manager import DeviceCatalogManager
 from stdatalog_pnpl.PnPLCmd import PnPLCMDManager
 from stdatalog_pnpl.DTDL.device_template_model import ContentSchema, SchemaEnum
 from stdatalog_pnpl.DTDL.dtdl_utils import UnitMap
@@ -193,6 +194,7 @@ class HSD_Controller(STDTDL_Controller):
                     self.objThread.start()
             if self.objThread.isRunning():
                 self.obj.interrupt_event.set()
+                self.objThread.quit()
 
     class SensorAcquisitionThread_test_v1(SensorAcquisitionThread):
         
@@ -257,6 +259,7 @@ class HSD_Controller(STDTDL_Controller):
     def __init__(self, parent=None):
         super().__init__(parent)
         # HSD
+        self.hsd = None
         self.hsd_link = None
         self.is_hsd_link_up = False
         self.is_logging = False
@@ -406,7 +409,7 @@ class HSD_Controller(STDTDL_Controller):
 
     def load_device_template(self, board_id, fw_id):
         self.sig_dtm_loading_started.emit()
-        dev_template_json = self.query_dtdl_model(board_id, fw_id)
+        dev_template_json = DeviceCatalogManager.query_dtdl_model(board_id, fw_id)
         if dev_template_json == "":
             log.error("Connected device not supported (Unrecognized board_id, fw_id)")
         if isinstance(dev_template_json,dict):
@@ -434,7 +437,7 @@ class HSD_Controller(STDTDL_Controller):
             dev_template_json = json.load(json_file)
             dtdl_model_name = os.path.splitext(os.path.basename(input_dt_file_path))[0]
             json_file.close()
-            super().add_dtdl_model(board_id, fw_id, dtdl_model_name, str(dev_template_json))
+            DeviceCatalogManager.add_dtdl_model(board_id, fw_id, dtdl_model_name, str(dev_template_json))
 
     def is_sensor_enabled(self, comp_name, d_id = 0):
         return self.hsd_link.get_sensor_enable(d_id, comp_name)
@@ -1095,6 +1098,10 @@ class HSD_Controller(STDTDL_Controller):
 
         for sf in self.threads_stop_flags:
             sf.set()
+        
+        for t in self.sensors_threads:
+            t.join()
+
         if self.save_files_flag:
             for f in self.sensor_data_files:
                 f.close()
@@ -1204,6 +1211,8 @@ class HSD_Controller(STDTDL_Controller):
     def send_command(self, json_command):
         log.info("PnPL Message: {}".format(json_command))
         response = self.hsd_link.send_command(self.device_id, json_command)
+        if response is not None:
+            self.sig_pnpl_response_received.emit(json_command, response)
         return response
     
     def save_config(self, on_pc:bool, on_sd:bool):
@@ -1310,11 +1319,15 @@ class HSD_Controller(STDTDL_Controller):
         self.hsd_link.set_rtc_time(self.device_id)
     
     def do_offline_plots(self, cb_sensor_value, tag_label, start_time, end_time, active_sensor_list, active_algorithm_list, debug_flag, sub_plots_flag, raw_data_flag, active_actuator_list = None, fft_flag = None):
+        
+        if self.hsd is not None:
+            self.hsd.close_plot_threads()
+        
         acquisition_folder = self.hsd_link.get_acquisition_folder()
         hsd_factory = HSDatalog()
-        hsd = hsd_factory.create_hsd(acquisition_folder)
+        self.hsd = hsd_factory.create_hsd(acquisition_folder)
         
-        hsd.enable_timestamp_recovery(debug_flag)
+        self.hsd.enable_timestamp_recovery(debug_flag)
         if tag_label == "None" or  tag_label == '':
             tag_label = None
         if cb_sensor_value == "all":
@@ -1323,21 +1336,21 @@ class HSD_Controller(STDTDL_Controller):
                 s[s_key]["is_first_chunk"] = True
                 ioffset = s[s_key].get("ioffset",0)
                 try:
-                    hsd.get_sensor_plot(s_key, s[s_key], start_time, end_time, tag_label if tag_label != "None" else None, [], sub_plots_flag, raw_data_flag, fft_flag)
+                    self.hsd.get_sensor_plot(s_key, s[s_key], start_time, end_time, tag_label if tag_label != "None" else None, [], sub_plots_flag, raw_data_flag, fft_flag)
                 except Exception as e:
                     log.error(f"Error in {s_key} get_sensor_plot: {e}")
                 HSDatalog.reset_status_conversion_side_info(s[s_key], ioffset)
             for a in active_algorithm_list:
                 a_key = list(a.keys())[0]
-                hsd.get_algorithm_plot(a_key, a[a_key], start_time, end_time, tag_label if tag_label != "None" else None, [], sub_plots_flag, raw_data_flag)
+                self.hsd.get_algorithm_plot(a_key, a[a_key], start_time, end_time, tag_label if tag_label != "None" else None, [], sub_plots_flag, raw_data_flag)
             if active_actuator_list is not None:
                 for act in active_actuator_list:
                     act_key = list(act.keys())[0]
-                    hsd.get_sensor_plot(act_key, act[act_key], start_time, end_time, tag_label if tag_label != "None" else None, [], sub_plots_flag, raw_data_flag, fft_flag)
+                    self.hsd.get_actuator_plot(act_key, act[act_key], start_time, end_time, tag_label if tag_label != "None" else None, [], True, raw_data_flag)
         else:
-            s_list = hsd.get_sensor_list(only_active=True)
-            a_list = hsd.get_algorithm_list(only_active=True)
-            act_list = hsd.get_actuator_list(only_active=True)
+            s_list = self.hsd.get_sensor_list(only_active=True)
+            a_list = self.hsd.get_algorithm_list(only_active=True)
+            act_list = self.hsd.get_actuator_list(only_active=True)
             sensor_comp = [s for s in s_list if cb_sensor_value in s]
             algo_comp = [a for a in a_list if cb_sensor_value in a]
             act_comp = [act for act in act_list if cb_sensor_value in act]
@@ -1346,17 +1359,17 @@ class HSD_Controller(STDTDL_Controller):
                 sensor_comp["is_first_chunk"] = True
                 ioffset = sensor_comp.get("ioffset",0)
                 try:
-                    hsd.get_sensor_plot(cb_sensor_value, sensor_comp, start_time, end_time, tag_label if tag_label != "None" else None, [], sub_plots_flag, raw_data_flag, fft_flag)
+                    self.hsd.get_sensor_plot(cb_sensor_value, sensor_comp, start_time, end_time, tag_label if tag_label != "None" else None, [], sub_plots_flag, raw_data_flag, fft_flag)
                 except Exception as e:
                     log.error(f"Error in {sensor_comp} get_sensor_plot: {e}")
                 HSDatalog.reset_status_conversion_side_info(sensor_comp, ioffset)
             elif len(algo_comp) > 0: # == 1
                 a_key = list(algo_comp[0].keys())[0]
 
-                hsd.get_algorithm_plot(a_key, algo_comp, start_time, end_time, tag_label if tag_label != "None" else None, sub_plots_flag, raw_data_flag)
+                self.hsd.get_algorithm_plot(a_key, algo_comp, start_time, end_time, tag_label if tag_label != "None" else None, sub_plots_flag, raw_data_flag)
             elif len(act_comp) > 0: # == 1
                 act_comp = act_comp[0][cb_sensor_value]
-                hsd.get_sensor_plot(cb_sensor_value, act_comp, start_time, end_time, tag_label if tag_label != "None" else None, [], sub_plots_flag, raw_data_flag, fft_flag)
+                self.hsd.get_actuator_plot(cb_sensor_value, act_comp, start_time, end_time, tag_label if tag_label != "None" else None, [], True, raw_data_flag)
         
         self.sig_offline_plots_completed.emit()
     

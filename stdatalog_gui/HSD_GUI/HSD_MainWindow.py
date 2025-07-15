@@ -106,6 +106,8 @@ class HSD_MainWindow(STDTDL_MainWindow):
 
     def closeEvent(self, event):
         self.controller.stop_log()
+        if self.controller.hsd is not None:
+            self.controller.hsd.close_plot_threads()
         event.accept()
 
     def keyPressEvent(self, event):

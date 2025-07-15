@@ -20,8 +20,15 @@ import sys
 import subprocess
 import asyncio
 import importlib
+import threading
 
-from PySide6.QtWidgets import QFrame, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QFileDialog, QCheckBox, QGroupBox, QLabel, QWidget, QSizePolicy, QRadioButton
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+from PySide6.QtCore import QThread, Signal, Qt
+from PySide6.QtWidgets import QFrame, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QFileDialog, \
+                                QCheckBox, QGroupBox, QLabel, QWidget, QSizePolicy, QDialog, QPlainTextEdit, \
+                                QMessageBox, QVBoxLayout
 from PySide6.QtDesigner import QPyDesignerCustomWidgetCollection
 from PySide6.QtCore import QDir, Signal, QObject
 from PySide6.QtGui import QColor, QIcon
@@ -39,24 +46,31 @@ from stdatalog_dtk.HSD_DataToolkit_Pipeline import HSD_DataToolkit_Pipeline
 import stdatalog_core.HSD_utils.staiotcraft_dependencies.p310
 import stdatalog_core.HSD_utils.staiotcraft_dependencies.p311
 import stdatalog_core.HSD_utils.staiotcraft_dependencies.p312
+import stdatalog_core.HSD_utils.staiotcraft_dependencies.p313
 
 oidc_client_whl_path_310 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p310', 'oidc_client-0.2.6-py3-none-any.whl')
 vespucci_python_utils_whl_path_310 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p310', 'vespucci_python_utils-0.1.2-py3-none-any.whl')
 dataset_models_whl_path_310 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p310', 'dataset_models-0.1.7-py3-none-any.whl')
 dataset_api_client_whl_path_310 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p310', 'dataset_api_client-0.1.5-py3-none-any.whl')
-staiotcraft_sdk_whl_path_310 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p310', 'staiotcraft_sdk-1.0.1-py3-none-any.whl')
+staiotcraft_sdk_whl_path_310 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p310', 'staiotcraft_sdk-1.1.0-py3-none-any.whl')
 
 oidc_client_whl_path_311 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p311', 'oidc_client-0.2.6-py3-none-any.whl')
 vespucci_python_utils_whl_path_311 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p311', 'vespucci_python_utils-0.1.2-py3-none-any.whl')
 dataset_models_whl_path_311 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p311', 'dataset_models-0.1.7-py3-none-any.whl')
 dataset_api_client_whl_path_311 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p311', 'dataset_api_client-0.1.5-py3-none-any.whl')
-staiotcraft_sdk_whl_path_311 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p311', 'staiotcraft_sdk-1.0.1-py3-none-any.whl')
+staiotcraft_sdk_whl_path_311 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p311', 'staiotcraft_sdk-1.1.0-py3-none-any.whl')
 
 oidc_client_whl_path_312 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p312', 'oidc_client-0.2.6-py3-none-any.whl')
 vespucci_python_utils_whl_path_312 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p312', 'vespucci_python_utils-0.1.2-py3-none-any.whl')
 dataset_models_whl_path_312 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p312', 'dataset_models-0.1.7-py3-none-any.whl')
 dataset_api_client_whl_path_312 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p312', 'dataset_api_client-0.1.5-py3-none-any.whl')
-staiotcraft_sdk_whl_path_312 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p312', 'staiotcraft_sdk-1.0.1-py3-none-any.whl')
+staiotcraft_sdk_whl_path_312 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p312', 'staiotcraft_sdk-1.1.0-py3-none-any.whl')
+
+oidc_client_whl_path_313 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p313', 'oidc_client-0.2.6-py3-none-any.whl')
+vespucci_python_utils_whl_path_313 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p313', 'vespucci_python_utils-0.1.2-py3-none-any.whl')
+dataset_models_whl_path_313 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p313', 'dataset_models-0.1.7-py3-none-any.whl')
+dataset_api_client_whl_path_313 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p313', 'dataset_api_client-0.1.5-py3-none-any.whl')
+staiotcraft_sdk_whl_path_313 = resource_filename('stdatalog_core.HSD_utils.staiotcraft_dependencies.p313', 'staiotcraft_sdk-1.1.0-py3-none-any.whl')
 
 check_path = resource_filename('stdatalog_gui.UI.icons', 'outline_check_white_18dp.png')
 cloud_upload_path = resource_filename('stdatalog_gui.UI.icons', 'outline_cloud_upload_white_18dp.png')
@@ -66,72 +80,170 @@ hsd2_folder_icon_path = resource_filename('stdatalog_gui.UI.icons', 'baseline_fo
 from stdatalog_gui.Widgets.AcqListItemWidget import AcqListItemWidget
 from stdatalog_core.HSD.HSDatalog import HSDatalog
 import stdatalog_core.HSD_utils.logger as logger
-from PySide6.QtWidgets import QVBoxLayout, QLabel
 
 DEPENDENCY_OK = 0
 PYTHON_VERSION_ERROR = -1
 DEPENDENCY_INSTALL_ERROR = -2
 
-selected_model_stylesheet = "border: 2px solid rgb(255, 210, 0); background-color: rgb(255, 221, 64);color: rgb(3, 35, 75);"
-unselected_model_stylesheet = "border: transparent; background-color: rgb(39, 44, 54);color: rgb(210,210,210);"
+selected_stylesheet = "border: transparent; background-color: rgb(255, 221, 64);color: rgb(3, 35, 75);"
+unselected_stylesheet = "border: transparent; background-color: rgb(39, 44, 54);color: rgb(210,210,210);"
 
 # Workspace folder.
 WORKSPACE_PATH = os.path.join(os.path.expanduser('~'), "workspace")
 
 log = logger.get_logger(__name__)
 
-class STAIoTCraftModel(QObject):
-    
-    sig_model_selected = Signal(str, str)
-    sig_acquisition_selected = Signal(str)
-    
-    def __init__(self):
+class InstallerThread(QThread):
+    finished = Signal()
+
+    def run(self):
+
+        #Check python version and install the correct whl
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+        if python_version == "3.10":
+            oidc_client_whl_path = oidc_client_whl_path_310
+            vespucci_python_utils_whl_path = vespucci_python_utils_whl_path_310
+            dataset_models_whl_path = dataset_models_whl_path_310
+            dataset_api_client_whl_path = dataset_api_client_whl_path_310
+            staiotcraft_sdk_whl_path = staiotcraft_sdk_whl_path_310
+        elif python_version == "3.11":
+            oidc_client_whl_path = oidc_client_whl_path_311
+            vespucci_python_utils_whl_path = vespucci_python_utils_whl_path_311
+            dataset_models_whl_path = dataset_models_whl_path_311
+            dataset_api_client_whl_path = dataset_api_client_whl_path_311
+            staiotcraft_sdk_whl_path = staiotcraft_sdk_whl_path_311
+        elif python_version == "3.12":
+            oidc_client_whl_path = oidc_client_whl_path_312
+            vespucci_python_utils_whl_path = vespucci_python_utils_whl_path_312
+            dataset_models_whl_path = dataset_models_whl_path_312
+            dataset_api_client_whl_path = dataset_api_client_whl_path_312
+            staiotcraft_sdk_whl_path = staiotcraft_sdk_whl_path_312
+        elif python_version == "3.13":
+            oidc_client_whl_path = oidc_client_whl_path_313
+            vespucci_python_utils_whl_path = vespucci_python_utils_whl_path_313
+            dataset_models_whl_path = dataset_models_whl_path_313
+            dataset_api_client_whl_path = dataset_api_client_whl_path_313
+            staiotcraft_sdk_whl_path = staiotcraft_sdk_whl_path_313
+        else:
+            log.error(f"Unsupported Python version: {python_version}")
+            # if loading_dialog.dialog.isVisible():
+            #     loading_dialog.loadingDone()
+            # return PYTHON_VERSION_ERROR
+
+        subprocess.check_call([sys.executable, "-m", "pip", "install", oidc_client_whl_path])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", vespucci_python_utils_whl_path])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", dataset_models_whl_path])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", dataset_api_client_whl_path])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", staiotcraft_sdk_whl_path])
+        # loading_dialog.loadingDone()
+
+        subprocess.run(["pip", "install", "requests"])
+        self.finished.emit()
+
+class STAIoTCraftLoginThread(QThread):
+    login_finished = Signal(bool)
+
+    def __init__(self, staiotcraft_client, parent=None):
+        super().__init__(parent)
+        self.staiotcraft_client = staiotcraft_client
+
+    def run(self):
+        try:
+            self.staiotcraft_client.login()
+            self.login_finished.emit(True)
+        except Exception as e:
+            log.error(f"Login failed: {e}")
+            self.login_finished.emit(False)
+
+class STAIoTCraftDataset(QObject):
+
+    def __init__(self, name, description, id, device, creation_time, last_update_time, tag_classes):
         super().__init__()
-        self.model_name = ""
-        self.project_name = ""
+        self.name = name
+        self.description = description
+        self.id = id
+        self.device = device
+        self.creation_time = creation_time
+        self.last_update_time = last_update_time
+        self.tag_classes = tag_classes
+        self.is_dataset_selected = False
 
-    def set_selected_model(self, project_name, model_name):
-        self.model_name = model_name
-        self.project_name = project_name
-
-    def get_selected_model_name(self):        
-        return self.model_name
+class STAIoTCraftCreateDatasetDialog(QDialog):
     
-    def get_selected_project_name(self):
-        return self.project_name
-    
-class ModelListItemWidget(QWidget):
-    def __init__(self, name, device, component, type, tag_classes, parent=None):
+    def __init__(self, dataset_creation_cb, parent=None):
         super().__init__(parent)
         self.parent = parent
-        self.name = name
-        self.device = device
-        self.component = component
-        self.type = type
-        self.tag_classes = tag_classes
-        self.is_model_selected = False
+        self.dataset_creation_cb = dataset_creation_cb
+        
+        QPyDesignerCustomWidgetCollection.registerCustomWidget(DatasetListItemWidget, module="DatasetListItemWidget")
+        loader = QUiLoader()
+        dataset_creation_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"UI","create_dataset_dialog.ui"), parent)
+
+        self.dataset_name_textEdit = dataset_creation_widget.findChild(QLineEdit, "dataset_name_textEdit")
+        self.dataset_description_plainTextEdit = dataset_creation_widget.findChild(QPlainTextEdit, "dataset_description_plainTextEdit")
+
+        self.frame_dataset_classes = dataset_creation_widget.findChild(QFrame, "frame_dataset_classes")
+        self.frame_dataset_classes.setVisible(False)
+
+        self.create_button = dataset_creation_widget.findChild(QPushButton, "create_button")
+        self.create_button.clicked.connect(self.create_dataset)
+        self.cancel_button = dataset_creation_widget.findChild(QPushButton, "cancel_button")
+        self.cancel_button.clicked.connect(self.reject)
+        self.dataset_error_label = dataset_creation_widget.findChild(QLabel, "dataset_error_label")
+        self.dataset_error_label.setVisible(False)
+
+        self.setWindowTitle("Dataset Creation")
+        self.setLayout(QVBoxLayout())
+        self.layout().addWidget(dataset_creation_widget)
+
+    def create_dataset(self):
+        self.dataset_error_label.setVisible(False)
+        dataset_name = self.dataset_name_textEdit.text()
+        dataset_description = self.dataset_description_plainTextEdit.toPlainText()
+        if not dataset_name:
+            log.error("Dataset name cannot be empty.")
+            self.dataset_error_label.setText("Dataset name cannot be empty.")
+            self.dataset_error_label.setVisible(True)
+            return
+        self.dataset_creation_cb(dataset_name, dataset_description)
+        self.accept()
+        
+class DatasetListItemWidget(QWidget):
+    def __init__(self, dataset, dataset_clicked_cb = None, parent=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.dataset_clicked_cb = dataset_clicked_cb
+        self.dataset_name = dataset.name
+        self.dataset_description = dataset.description
+        self.dataset_id = dataset.id
+        self.creation_time = dataset.created.strftime("%Y-%m-%d %H:%M:%S")
+        self.last_update_time = dataset.modified.strftime("%Y-%m-%d %H:%M:%S")
+        self.tag_classes = dataset.ground_truth_labels
+        self.is_dataset_selected = False
         self.chip_colors = [QColor('#B6CE5F'),
                             QColor('#62C3EB'),
                             QColor('#EB3297'),
                             QColor('#6AC1A4')]
 
-        QPyDesignerCustomWidgetCollection.registerCustomWidget(ModelListItemWidget, module="ModelListItemWidget")
+        QPyDesignerCustomWidgetCollection.registerCustomWidget(DatasetListItemWidget, module="DatasetListItemWidget")
         loader = QUiLoader()
-        model_item_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"UI","model_list_item_widget.ui"), parent)
-        self.frame_model:QFrame = model_item_widget.frame_model
-        self.frame_model_name = model_item_widget.frame_model.findChild(QFrame,"frame_model_name")
-        self.label_model_name = model_item_widget.frame_model.findChild(QPushButton,"label_model_name")
-        self.label_model_name.setText(self.name)
-        self.label_model_name.clicked.connect(self.model_clicked)
-        self.frame_model_components = model_item_widget.findChild(QFrame,"frame_model_components")
-        self.model_device_textEdit = self.frame_model_components.findChild(QLineEdit,"model_device_textEdit")
-        self.model_component_textEdit = self.frame_model_components.findChild(QLineEdit,"model_component_textEdit")
-        self.model_type_textEdit = self.frame_model_components.findChild(QLineEdit,"model_type_textEdit")
-        self.frame_model_classes = self.frame_model_components.findChild(QFrame,"frame_model_classes")
+        dataset_item_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"UI","dataset_list_item_widget.ui"), parent)
+        self.frame_dataset:QFrame = dataset_item_widget.frame_dataset
+        self.frame_dataset_name:QFrame = self.frame_dataset.findChild(QFrame,"frame_dataset_name")
+        self.label_dataset_name = self.frame_dataset.findChild(QPushButton,"label_dataset_name")
+        self.label_dataset_name.setText(self.dataset_name)
+        self.label_dataset_name.clicked.connect(self.dataset_clicked)
+        self.label_dataset_description = self.frame_dataset.findChild(QLabel,"label_dataset_description")
+        self.label_dataset_description.setText(self.dataset_description)
+        self.label_dataset_id = self.frame_dataset.findChild(QPushButton,"label_dataset_id")
+        self.label_dataset_id.setText(self.dataset_id)
+        self.frame_dataset_components = dataset_item_widget.findChild(QFrame,"frame_dataset_components")
+        self.dataset_creation_textEdit = self.frame_dataset_components.findChild(QLineEdit,"dataset_creation_textEdit")
+        self.dataset_last_updated_textEdit = self.frame_dataset_components.findChild(QLineEdit,"dataset_last_updated_textEdit")
+        self.frame_dataset_classes = self.frame_dataset_components.findChild(QFrame,"frame_dataset_classes")
 
-        self.model_device_textEdit.setText(self.device)
-        self.model_component_textEdit.setText(self.component)
-        self.model_type_textEdit.setText(self.type)
+        self.dataset_creation_textEdit.setText(str(self.creation_time))
+        self.dataset_last_updated_textEdit.setText(str(self.last_update_time))
 
         for i, c in enumerate(self.tag_classes):
             tc_chip = QPushButton(c)
@@ -141,103 +253,46 @@ class ModelListItemWidget(QWidget):
             tc_chip.setCheckable(True)
             tc_chip.setEnabled(False)
             tc_chip.setChecked(True)
-            self.frame_model_classes.layout().addWidget(tc_chip)
+            self.frame_dataset_classes.layout().addWidget(tc_chip)
         horizontal_spacer = QWidget()
         horizontal_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        self.frame_model_classes.layout().addWidget(horizontal_spacer)
+        self.frame_dataset_classes.layout().addWidget(horizontal_spacer)
 
         self.setLayout(QVBoxLayout())
-        self.layout().addWidget(model_item_widget)
+        self.layout().addWidget(dataset_item_widget)
         self.shrinked_size = self.sizeHint()
 
-    def model_clicked(self, event):
-        self.parent.on_model_item_click(self)
+    def dataset_clicked(self, event):
+        self.dataset_clicked_cb(self)
+class STDTDL_ExperimentalFeaturesPage(QObject):
+    
+    login_finished = Signal()
+    upload_finished = Signal()
+    sig_datasets_retrieved = Signal(object)
+    sig_acquisition_uploaded = Signal(dict)
+    sig_acquisition_upload_error = Signal(dict)
+    sig_dataset_created = Signal(object)
 
-class ProjectListItemWidget(QWidget):
-    def __init__(self, staiot_model:STAIoTCraftModel, project, parent=None):
-        super().__init__(parent)
-        self.parent = parent
-        self.project_name = project.ai_project_name
-        self.project_desc = project.description
-        self.creation_time = project.creation_time
-        self.last_update_time = project.last_update_time
-        self.models_list = project.models
-        self.staiot_model = staiot_model
-
-        QPyDesignerCustomWidgetCollection.registerCustomWidget(ProjectListItemWidget, module="ProjectListItemWidget")
-        loader = QUiLoader()
-        prj_item_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"UI","prj_list_item_widget.ui"), parent)
-        self.frame_project:QFrame = prj_item_widget.frame_project
-        self.frame_prj_name = prj_item_widget.frame_project.findChild(QFrame,"frame_prj_name")
-        self.label_prj_name = self.frame_prj_name.findChild(QPushButton,"label_prj_name")
-        self.label_prj_name.setText(self.project_name)
-        self.frame_prj_components = prj_item_widget.findChild(QFrame,"frame_prj_components")
-        self.prj_description_label = self.frame_prj_components.findChild(QLabel,"prj_description_label")
-        self.prj_description_label.setText(self.project_desc)
-        self.prj_creation_textEdit = self.frame_prj_name.findChild(QLineEdit,"prj_creation_textEdit")
-        self.prj_creation_textEdit.setText(str(self.creation_time))
-        self.prj_last_updated_textEdit = self.frame_prj_name.findChild(QLineEdit,"prj_last_updated_textEdit")
-        self.prj_last_updated_textEdit.setText(str(self.last_update_time))
-        self.models_listWidget = prj_item_widget.findChild(QListWidget,"models_listWidget")
-        for model in self.models_list:
-            item = QListWidgetItem(self.models_listWidget)
-            custom_widget = ModelListItemWidget(model.name, model.target.device , model.target.component, model.target.type, model.metadata.classes, self)
-            self.models_listWidget.addItem(item)
-            self.models_listWidget.setItemWidget(item, custom_widget)
-            item.setSizeHint(custom_widget.sizeHint())
-
-        # Calculate the total height required to display all items
-        total_height = self.models_listWidget.sizeHintForRow(0) * self.models_listWidget.count() + 2 * self.models_listWidget.frameWidth()
-        self.models_listWidget.setFixedHeight(total_height)
-
-        # Connect the itemClicked signal to the on_item_click function
-        self.models_listWidget.itemClicked.connect(self.on_model_item_click)
-
-        #Main layout
-        main_layout = QVBoxLayout()
-        self.setLayout(main_layout)
-        main_layout.addWidget(prj_item_widget)
-        self.shrinked_size = self.sizeHint()
-
-    def update_models_selected_stylesheet(self):
-        for i in range(self.models_listWidget.count()):
-            item = self.models_listWidget.item(i)
-            custom_widget = self.models_listWidget.itemWidget(item)
-            if self.staiot_model.get_selected_project_name() != self.project_name:
-                custom_widget.frame_model_name.setStyleSheet(unselected_model_stylesheet)
-            else:
-                if self.staiot_model.get_selected_model_name() != custom_widget.name:
-                    custom_widget.frame_model_name.setStyleSheet(unselected_model_stylesheet)
-                else:
-                    custom_widget.frame_model_name.setStyleSheet(selected_model_stylesheet)
-
-    def on_model_item_click(self, item):
-        if isinstance(item, ModelListItemWidget):
-            custom_widget = item
-            for i in range(self.models_listWidget.count()):
-                if self.models_listWidget.itemWidget(self.models_listWidget.item(i)) == custom_widget:
-                    item = self.models_listWidget.item(i)
-                    self.models_listWidget.setCurrentItem(item)
-        else:
-            custom_widget = self.models_listWidget.itemWidget(item)
-
-        self.staiot_model.set_selected_model(self.project_name, custom_widget.name)
-        self.staiot_model.sig_model_selected.emit(self.project_name, custom_widget.name)
-        print(f"Project Selected; {self.project_name}, Model Selected: {custom_widget.name}")
-
-class STDTDL_ExperimentalFeaturesPage():
     def __init__(self, page_widget, controller):
+        super().__init__()
+        self.event_loop = None
         self.controller = controller
-        self.staiot_craft_env_flag = False
-        self.selected_acquisitions = []
-        self.acquisition_uploaded = {}
+        self.executor = ThreadPoolExecutor()
+        self.dependencies_install_dialog = None
+
+        self.sig_datasets_retrieved.connect(self.on_datasets_retrieved)
+        self.sig_acquisition_uploaded.connect(self.on_acquisition_uploaded)
+        self.sig_acquisition_upload_error.connect(self.on_acquisition_upload_error)
+        self.sig_dataset_created.connect(self.on_dataset_created)
+
         self.staiotcraft_client = None
         self.logged_in = False
-        self.staiotcraft_model = STAIoTCraftModel()
-        self.staiotcraft_model.sig_model_selected.connect(self.s_model_selected)
-        self.staiotcraft_model.sig_acquisition_selected.connect(self.s_acquisition_selected)
+        self.login_loading_dialog = None
+        self.selected_acquisitions = []
+        self.acquisition_uploaded = {}
+        self.datasets = []
+        self.selected_dataset = None
 
-        # self.controller.sig_user_login_done.connect(self.s_user_login_cb)
         self.page_widget = page_widget
         self.main_layout = page_widget.findChild(QFrame, "frame_experimental_features")
 
@@ -255,8 +310,6 @@ class STDTDL_ExperimentalFeaturesPage():
         self.acq_upload_main_layout = page_widget.findChild(QFrame, "acq_upload_frame")
         self.acq_upload_frame_content = page_widget.findChild(QFrame, "acq_upload_frame_content")
         self.acq_upload_frame_content.setEnabled(False)
-        # self.acq_upload_main_layout.setEnabled(False)
-        # self.acq_upload_main_layout.setVisible(False)
         self.acquisition_upload_checkBox = page_widget.findChild(QCheckBox, "upload_acquisition_checkBox")
         self.acquisition_upload_checkBox.toggled.connect(self.acquisition_upload_checkBox_toggled)
         
@@ -267,16 +320,20 @@ class STDTDL_ExperimentalFeaturesPage():
 
         self.login_button = page_widget.findChild(QPushButton, "login_button")
         self.login_button.setEnabled(False)
-        # self.login_button.clicked.connect(self.show_login_dialog)
-        self.login_button.clicked.connect(lambda: asyncio.run(self.show_login_dialog()))
+        self.login_button.clicked.connect(self._on_login_button_clicked)
+        # self.login_button.clicked.connect(lambda: asyncio.run(self.show_login_dialog()))
 
         self.howto_button = page_widget.findChild(QPushButton, "howto_button")
         self.howto_button.clicked.connect(self.open_howto)
 
-        self.groupBox_projects_list = page_widget.findChild(QGroupBox, "groupBox_projects_list")
-        self.projects_listWidget:QListWidget = page_widget.findChild(QListWidget, "projects_listWidget")
-        # self.projects_listWidget.itemSelectionChanged.connect(self.project_selected)
-        self.groupBox_projects_list.setEnabled(False)
+        self.groupBox_datasets_list = page_widget.findChild(QGroupBox, "groupBox_datasets_list")
+        self.datasets_listWidget:QListWidget = page_widget.findChild(QListWidget, "datasets_listWidget")
+        self.datasets_listWidget.itemClicked.connect(self.on_dataset_item_click)
+        self.groupBox_datasets_list.setEnabled(False)
+
+        self.create_new_dataset_button = page_widget.findChild(QPushButton, "create_new_dataset_button")
+        self.create_new_dataset_button.clicked.connect(self.show_new_dataset_dialog)
+        self.create_new_dataset_button.setEnabled(False)
 
         self.groupBox_base_acquisition_selection = page_widget.findChild(QFrame, "groupBox_base_acquisition_selection")
         self.base_acq_folder_button = page_widget.findChild(QPushButton, "base_acq_folder_button")
@@ -287,7 +344,6 @@ class STDTDL_ExperimentalFeaturesPage():
         self.groupBox_acquisitions_list = page_widget.findChild(QGroupBox, "groupBox_acquisitions_list")
         self.acquisitions_listWidget:QListWidget = page_widget.findChild(QListWidget, "acquisitions_listWidget")
         
-        # self.acquisitions_listWidget.itemSelectionChanged.connect(self.acquisition_selected)
         # Connect the itemClicked signal to the on_item_click function
         self.acquisitions_listWidget.itemClicked.connect(self.acquisition_selected)
         
@@ -296,10 +352,10 @@ class STDTDL_ExperimentalFeaturesPage():
         self.groupBox_upload_settings = page_widget.findChild(QGroupBox, "groupBox_upload_settings")
         self.upload_acquisition_button = page_widget.findChild(QPushButton, "upload_acquisition_button")
         # self.upload_acquisition_button.clicked.connect(self.upload_acquisitions)
-        self.upload_acquisition_button.clicked.connect(lambda: asyncio.run(self.upload_acquisitions()))
+        self.upload_acquisition_button.clicked.connect(self._on_acquisitions_upload_button_clicked)
         self.groupBox_upload_settings.setEnabled(False)
 
-    def check_dependencies(self):       
+    def check_dependencies(self):
         log.info("Checking additional required packages...")
 
         # required package
@@ -316,56 +372,331 @@ class STDTDL_ExperimentalFeaturesPage():
         # Notify user of missing packages
         if missing_staiotcraft_sdk:
             try:
-                loading_dialog = StaticLoadingWindow("Installing required packages...", "staiotcraft_sdk package is mandatory to use the ST AIoT Craft Acquisitions upload feature.\nPlease wait while the package is being installed...", self.page_widget)
-                self.controller.qt_app.processEvents()
-                log.warning("The following required packages are missing:")
-                log.warning(f" - (staiotcraft_sdk) staiotcraft_sdk")
-                log.info("This package is required to use the ST AIoT Craft Acquisitions upload feature and will be now installed.")
-
-                #TODO check python version and install the correct whl
-                python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
-                if python_version == "3.10":
-                    oidc_client_whl_path = oidc_client_whl_path_310
-                    vespucci_python_utils_whl_path = vespucci_python_utils_whl_path_310
-                    dataset_models_whl_path = dataset_models_whl_path_310
-                    dataset_api_client_whl_path = dataset_api_client_whl_path_310
-                    staiotcraft_sdk_whl_path = staiotcraft_sdk_whl_path_310
-                elif python_version == "3.11":
-                    oidc_client_whl_path = oidc_client_whl_path_311
-                    vespucci_python_utils_whl_path = vespucci_python_utils_whl_path_311
-                    dataset_models_whl_path = dataset_models_whl_path_311
-                    dataset_api_client_whl_path = dataset_api_client_whl_path_311
-                    staiotcraft_sdk_whl_path = staiotcraft_sdk_whl_path_311
-                elif python_version == "3.12":
-                    oidc_client_whl_path = oidc_client_whl_path_312
-                    vespucci_python_utils_whl_path = vespucci_python_utils_whl_path_312
-                    dataset_models_whl_path = dataset_models_whl_path_312
-                    dataset_api_client_whl_path = dataset_api_client_whl_path_312
-                    staiotcraft_sdk_whl_path = staiotcraft_sdk_whl_path_312
-                else:
-                    log.error(f"Unsupported Python version: {python_version}")
-                    if loading_dialog.dialog.isVisible():
-                        loading_dialog.loadingDone()
-                    return PYTHON_VERSION_ERROR
-
-                subprocess.check_call([sys.executable, "-m", "pip", "install", oidc_client_whl_path])
-                subprocess.check_call([sys.executable, "-m", "pip", "install", vespucci_python_utils_whl_path])
-                subprocess.check_call([sys.executable, "-m", "pip", "install", dataset_models_whl_path])
-                subprocess.check_call([sys.executable, "-m", "pip", "install", dataset_api_client_whl_path])
-                subprocess.check_call([sys.executable, "-m", "pip", "install", staiotcraft_sdk_whl_path])
-                loading_dialog.loadingDone()
-
+                self.start_dependencies_installation()
             except Exception as e:
                 log.error(f"Failed to install the required package: {required_package}")
                 log.error(f"Error: {e}")
-                if loading_dialog.dialog.isVisible():
-                    loading_dialog.loadingDone()
+                if self.dependencies_install_dialog.dialog.isVisible():
+                    self.dependencies_install_dialog.loadingDone()
                 return DEPENDENCY_INSTALL_ERROR
         else:
             log.info("All required packages are installed.")
 
         return DEPENDENCY_OK
     
+    def start_dependencies_installation(self):
+        self.acq_upload_frame_content.setEnabled(False)
+        self.dependencies_install_dialog = StaticLoadingWindow("Installing required packages...", "staiotcraft_sdk package is mandatory to use the ST AIoT Craft Acquisitions upload feature.\nPlease wait while the package is being installed...", self.page_widget)
+        self.controller.qt_app.processEvents()
+        
+        log.warning("The following required packages are missing:")
+        log.warning(f" - (staiotcraft_sdk) staiotcraft_sdk")
+        log.info("This package is required to use the ST AIoT Craft Acquisitions upload feature and will be now installed.")
+        self.thread = InstallerThread()
+        self.thread.finished.connect(self.on_dependencies_install_finished)
+        self.thread.start()
+
+    def on_dependencies_install_finished(self):
+        self.dependencies_install_dialog.loadingDone()
+        self.acq_upload_frame_content.setEnabled(True)
+    
+    def update_datasets_selected_stylesheet(self):
+        for i in range(self.datasets_listWidget.count()):
+            item = self.datasets_listWidget.item(i)
+            custom_widget = self.datasets_listWidget.itemWidget(item)
+            if custom_widget.is_dataset_selected:
+                custom_widget.frame_dataset_name.setStyleSheet(selected_stylesheet)
+            else:
+                custom_widget.frame_dataset_name.setStyleSheet(unselected_stylesheet)
+    
+    def _on_login_button_clicked(self):
+        self.start_login()
+
+    def create_staiotcraft_client(self):
+        """
+        Create the ST AIoT Craft client.
+        """
+        try:
+            staiotcraft_module = importlib.import_module('staiotcraft_sdk.staiotcraft_client')
+            STAIoTCraftClient = getattr(staiotcraft_module, "STAIoTCraftClient")
+            self.staiotcraft_client = STAIoTCraftClient.get_desktop_client(
+                workspace_folder=WORKSPACE_PATH
+            )
+            return self.staiotcraft_client
+        except Exception as e:
+            log.error(f"Error creating ST AIoT Craft client: {e}")
+            return None
+        
+    async def get_staiotcraft_datasets(self):
+        """
+        Get the datasets from the ST AIoT Craft platform.
+        """
+        try:
+            if self.staiotcraft_client is None:
+                self.staiotcraft_client = self.create_staiotcraft_client()
+            if self.staiotcraft_client is not None:
+                datasets = await self.staiotcraft_client.get_datasets()
+                self.sig_datasets_retrieved.emit(datasets)
+            else:
+                log.error("ST AIoT Craft client is not initialized.")
+                return []
+        except Exception as e:
+            log.error(f"Error getting datasets: {e}")
+            return []
+
+    def reset_UI(self):
+        """
+        Reset the UI elements to their initial state.
+        """
+        self.selected_acquisitions = []
+        self.acquisition_uploaded = {}
+        self.datasets = []
+        self.selected_dataset = None
+
+        self.login_button.setText("Login")
+        self.login_button.setStyleSheet(STDTDL_PushButton.green)
+        self.acq_upload_error_label.setText("")
+        self.acq_upload_error_label.setVisible(False)
+        self.upload_acquisition_button.setText("Upload Acquisitions")
+        self.upload_acquisition_button.setIcon(QIcon(cloud_upload_path))
+        self.groupBox_base_acquisition_selection.setEnabled(False)
+        self.create_new_dataset_button.setEnabled(False)
+        self.groupBox_datasets_list.setEnabled(False)
+        self.groupBox_acquisitions_list.setEnabled(False)
+        self.groupBox_upload_settings.setEnabled(False)
+
+        self.acquisitions_listWidget.clear()
+        self.datasets_listWidget.clear()
+
+    def on_datasets_retrieved(self, datasets):
+        """
+        Handle the datasets retrieved from the ST AIoT Craft platform.
+        This method populates the datasets list widget with the retrieved datasets.
+        """
+        self.datasets_listWidget.clear()
+        if datasets:
+            for dataset in datasets.items:
+                item = QListWidgetItem(self.datasets_listWidget)
+                custom_widget = DatasetListItemWidget(dataset, self.on_dataset_item_click)
+                self.datasets_listWidget.addItem(item)
+                self.datasets_listWidget.setItemWidget(item, custom_widget)
+                item.setSizeHint(custom_widget.sizeHint())
+        else:
+            log.info("No datasets found.")
+        self.update_datasets_selected_stylesheet()
+
+    def login_finished_handler(self, success):
+        """
+        Handle the login finished signal.
+        """
+        if success:
+            self.login_error_label.setVisible(False)
+            self.groupBox_datasets_list.setEnabled(True)
+            self.groupBox_acquisitions_list.setEnabled(True)
+            #self.groupBox_upload_settings.setEnabled(True)
+            self.create_new_dataset_button.setEnabled(True)
+            self.controller.qt_app.processEvents()
+            self.executor.submit(self._run_async, self.get_staiotcraft_datasets)
+            #print("Datasets fetched successfully.")
+        else:
+            self.login_error_label.setVisible(True)
+            self.login_error_label.setText("Login failed. Please try again.")
+            log.error("Login failed. Please try again.")
+    
+    def logout_finished_handler(self, success):
+        """
+        Handle the logout finished signal.
+        """
+        if success:
+            self.login_error_label.setVisible(False)
+            self.groupBox_datasets_list.setEnabled(False)
+            self.groupBox_acquisitions_list.setEnabled(False)
+            #self.groupBox_upload_settings.setEnabled(True)
+            self.create_new_dataset_button.setEnabled(False)
+        else:
+            self.login_error_label.setVisible(True)
+            self.login_error_label.setText("Logout failed. Please try again.")
+            log.error("Logout failed. Please try again.")
+
+    def start_login(self):
+        """
+        Start the login process for the ST AIoT Craft platform.
+        This method checks if the user is already logged in, and if not, it creates a new ST AIoT Craft client and logs in.
+        """
+        try:
+            if not self.logged_in:
+                self.login_error_label.setText("")
+                self.login_error_label.setVisible(False)
+                self.login_loading_dialog = StaticLoadingWindow("ST AIoT Craft Login", "Logging in to the ST AIoT Craft platform...\nPlease fill the login form opened in your browser with your ST account credentials.\nIf you don't have an account, please create one.", self.page_widget)
+                self.controller.qt_app.processEvents()
+                
+                # Create the ST AIoT Craft client.
+                self.staiotcraft_client = self.create_staiotcraft_client()
+                
+                self.login_button.setText("Logout")
+                self.login_button.setStyleSheet(STDTDL_PushButton.red)
+                self.groupBox_base_acquisition_selection.setEnabled(True)
+                if self.login_loading_dialog.dialog.isVisible():
+                    self.login_loading_dialog.loadingDone()
+                self.login_finished_handler(True)
+                self.logged_in = True
+            else:
+                # Logout logic
+                self.reset_UI()
+                self.staiotcraft_client = None
+                if self.login_loading_dialog is not None and self.login_loading_dialog.dialog.isVisible():
+                    self.login_loading_dialog.loadingDone()
+                self.logout_finished_handler(True)
+                self.logged_in = False
+        except Exception as e:
+            log.error(f"Error during login: {e}")
+            if self.login_loading_dialog is not None and self.login_loading_dialog.dialog.isVisible():
+                self.login_loading_dialog.loadingDone()
+            self.reset_UI()
+            self.staiotcraft_client = None
+            if self.logged_in:
+                self.logout_finished_handler(False)
+            else:
+                self.login_finished_handler(False)
+
+    def on_dataset_item_click(self, item):
+        if isinstance(item, DatasetListItemWidget):
+            custom_widget = item
+            for i in range(self.datasets_listWidget.count()):
+                if self.datasets_listWidget.itemWidget(self.datasets_listWidget.item(i)) == custom_widget:
+                    item = self.datasets_listWidget.item(i)
+                    self.datasets_listWidget.setCurrentItem(item)
+        else:
+            custom_widget = self.datasets_listWidget.itemWidget(item)
+        
+        clicked_widget = custom_widget
+        custom_widget.is_dataset_selected = not custom_widget.is_dataset_selected
+
+        # Convert custom_widget (DatasetListItemWidget) to STAIoTCraftDataset
+        dataset_obj = STAIoTCraftDataset(
+            name=custom_widget.dataset_name,
+            description=custom_widget.dataset_description,
+            id=custom_widget.dataset_id,
+            device=None,
+            creation_time=custom_widget.creation_time,
+            last_update_time=custom_widget.last_update_time,
+            tag_classes=custom_widget.tag_classes
+        )
+        self.selected_dataset = dataset_obj if custom_widget.is_dataset_selected else None
+        
+        for i in range(self.datasets_listWidget.count()):
+            item = self.datasets_listWidget.item(i)
+            custom_widget = self.datasets_listWidget.itemWidget(item)
+            if custom_widget is not clicked_widget:
+                custom_widget.is_dataset_selected = False
+
+        self.update_datasets_selected_stylesheet()
+        self.upload_acquisition_button.setText("Upload Acquisitions")
+        self.upload_acquisition_button.setIcon(QIcon(cloud_upload_path))
+        self.acq_upload_error_label.setText("")
+        self.acq_upload_error_label.setVisible(False)
+        if self.selected_dataset is not None and self.selected_acquisitions != []:
+            self.groupBox_upload_settings.setEnabled(True)
+        else:
+            self.groupBox_upload_settings.setEnabled(False)
+        
+    def create_dataset_handler(self, dataset_name, dataset_description=None):
+        """
+        Callback function to handle the creation of a new dataset.
+        This function is called when the user clicks the "Create" button in the dataset creation dialog.
+        """
+        if not dataset_name:
+            log.error("Dataset name cannot be empty.")
+            return
+        try:
+            self.login_error_label.setVisible(False)
+            self.login_error_label.setText("")
+            self.executor.submit(self._run_async, self.staiotcraft_create_dataset, dataset_name, dataset_description)
+        except Exception as e:
+            log.error(f"Failed to create a new dataset: {e}")
+
+    async def staiotcraft_create_dataset(self, dataset_name, dataset_description=None):
+        """
+        Create a new dataset on the ST AIoT Craft platform.
+        This method is called when the user clicks the "Create" button in the dataset creation dialog.
+        """
+        self.login_error_label.setVisible(False)
+        self.login_error_label.setText("")
+        max_retries = 2
+        for attempt in range(max_retries):
+            try:
+                dataset = await self.staiotcraft_client.create_dataset(
+                    dataset_name=dataset_name,
+                    ground_truth_labels=[],
+                    description=dataset_description or 'This is an example dataset created by means of the STAIoTCraftSDK_Python.'
+                )
+                if not dataset:
+                    raise Exception('Failed to create a new dataset.')
+                self.sig_dataset_created.emit(dataset)
+                break
+            except Exception as e:
+                if hasattr(e, 'args') and any("Event loop is closed" in str(arg) for arg in e.args):
+                    if attempt < max_retries - 1:
+                        continue
+                else:
+                    log.error(f"Failed to create a new dataset: {e}")
+                    self.login_error_label.setText(f"Failed to create a new dataset: {e}")
+                    self.login_error_label.setVisible(True)
+                    self.sig_dataset_created.emit(None)
+
+    def on_dataset_created(self, dataset):
+        """
+        Handle the dataset created signal.
+        This method is called when a new dataset is successfully created.
+        """
+        if dataset:
+            item = QListWidgetItem(self.datasets_listWidget)
+            custom_widget = DatasetListItemWidget(dataset, self.on_dataset_item_click)
+            self.datasets_listWidget.addItem(item)
+            self.datasets_listWidget.setItemWidget(item, custom_widget)
+            item.setSizeHint(custom_widget.sizeHint())
+            self.update_datasets_selected_stylesheet()
+            print(f"Dataset '{dataset.name}' created successfully.")
+            # Select the newly created item in the acquisitions list widget and scroll to it
+            if self.datasets_listWidget.count() > 0:
+                last_index = self.datasets_listWidget.count() - 1
+                self.datasets_listWidget.setCurrentRow(last_index)
+                self.datasets_listWidget.scrollToItem(self.datasets_listWidget.item(last_index))
+                self.on_dataset_item_click(custom_widget)
+        else:
+            log.error("Failed to create a new dataset.")
+
+    def show_new_dataset_dialog(self):
+        """
+        Create a new dataset on the ST AIoT Craft platform.
+        """
+        new_dataset_dialog = STAIoTCraftCreateDatasetDialog(self.create_dataset_handler, self.page_widget)
+        new_dataset_dialog.setWindowTitle("Dataset  Creation")
+        new_dataset_dialog.exec()
+        self.controller.qt_app.processEvents()
+        # print('Creating a new dataset on the ST AIoT Craft platform...')
+        # try:
+        #     self.login_error_label.setVisible(False)
+        #     self.login_error_label.setText("")
+        #     dataset = await self.staiotcraft_client.create_dataset(
+        #         dataset_name = 'MyNewDataset',
+        #         ground_truth_labels = ['one', 'two', 'three'],
+        #         description = 'This is an example dataset created by means of the STAIoTCraftSDK_Python.'
+        #     )
+        #     if not dataset:
+        #         raise Exception('Failed to create a new dataset.')
+            
+        #     item = QListWidgetItem(self.datasets_listWidget)
+        #     custom_widget = DatasetListItemWidget(dataset, self.on_dataset_item_click)
+        #     self.datasets_listWidget.addItem(item)
+        #     self.datasets_listWidget.setItemWidget(item, custom_widget)
+        #     item.setSizeHint(custom_widget.sizeHint())
+        # except Exception as e:
+        #     log.error(f"Failed to create a new dataset: {e}")
+        #     self.login_error_label.setText(f"Failed to create a new dataset: {e}")
+        #     self.login_error_label.setVisible(True)
+
+        
     def select_dt_plugins_folder(self):
         self.controller.remove_dt_plugins_folder()
         # Open a dialog to select a directory
@@ -426,89 +757,6 @@ class STDTDL_ExperimentalFeaturesPage():
         howto_dialog = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"UI","staiotcraft_howto_dialog.ui"), self.page_widget) # Load the info dialog UI
         howto_dialog.exec() # Execute the info dialog
 
-    async def show_login_dialog(self):
-        if not self.logged_in:
-            login_loading_dialog = StaticLoadingWindow("ST AIoT Craft Login", "Logging in to the ST AIoT Craft platform...\nPlease fill the login form opened in yout browser with your ST account credentials.\nIf you don't have an account, please create one.", self.page_widget)
-            self.controller.qt_app.processEvents()
-            self.groupBox_base_acquisition_selection.setEnabled(True)
-            
-            staiotcraft_module = importlib.import_module('staiotcraft_sdk.staiotcraft_client')
-            STAIoTCraftClient = getattr(staiotcraft_module,"STAIoTCraftClient")
-            self.staiotcraft_client = STAIoTCraftClient.get_desktop_client(
-                workspace_folder = WORKSPACE_PATH
-            )
-            # Getting user's projects.
-            print('Getting user\'s projects...')
-            projects = await self.staiotcraft_client.get_projects()
-            if not projects:
-                if login_loading_dialog.dialog.isVisible():
-                    login_loading_dialog.loadingDone()
-                    self.logged_in = False
-                    self.login_button.setText("Login")
-                    self.login_button.setStyleSheet(STDTDL_PushButton.green)
-                raise Exception('No projects available for the user.')
-            else:
-                if len(projects) > 0:
-                    self.groupBox_projects_list.setEnabled(True)
-                    self.projects_listWidget.clear()
-                for project in projects:
-                    print('- {}'.format(project.short_repr()))
-                    item = QListWidgetItem(self.projects_listWidget)
-                    custom_widget = ProjectListItemWidget(self.staiotcraft_model, project, self.projects_listWidget)
-                    self.projects_listWidget.addItem(item)
-                    self.projects_listWidget.setItemWidget(item, custom_widget)
-                    item.setSizeHint(custom_widget.sizeHint())
-                
-                if login_loading_dialog.dialog.isVisible():
-                    login_loading_dialog.loadingDone()
-
-                self.logged_in = True
-                self.login_button.setText("Logout")
-                self.login_button.setStyleSheet(STDTDL_PushButton.red)
-        else:
-            self.staiotcraft_client = None
-            self.projects_listWidget.clear()
-            self.acquisitions_listWidget.clear()
-            self.logged_in = False
-            self.selected_acquisitions = []
-            self.acquisition_uploaded = {}
-            self.login_button.setText("Login")
-            self.login_button.setStyleSheet(STDTDL_PushButton.green)
-            self.acq_upload_error_label.setText("")
-            self.acq_upload_error_label.setVisible(False)
-            self.upload_acquisition_button.setText("Upload Acquisitions")
-            self.upload_acquisition_button.setIcon(QIcon(cloud_upload_path))
-            self.groupBox_upload_settings.setEnabled(False)
-    
-    def s_model_selected(self, project_name, model_name):
-        for i in range(self.projects_listWidget.count()):
-            item = self.projects_listWidget.item(i)
-            custom_widget = self.projects_listWidget.itemWidget(item)
-            custom_widget.update_models_selected_stylesheet()
-        if self.upload_acquisition_button.text() == "Acquisitions Uploaded":
-            self.upload_acquisition_button.setText("Upload Acquisitions")
-            self.upload_acquisition_button.setIcon(QIcon(cloud_upload_path))
-            self.acq_upload_error_label.setVisible(False)
-        if self.selected_acquisitions != []:
-            self.groupBox_upload_settings.setEnabled(True)
-        else:
-            self.groupBox_upload_settings.setEnabled(False)
-
-    def s_acquisition_selected(self, acq_folder_path):
-        for i in range(self.acquisitions_listWidget.count()):
-            item = self.acquisitions_listWidget.item(i)
-            custom_widget = self.acquisitions_listWidget.itemWidget(item)
-            if custom_widget.acq_folder_path == acq_folder_path:
-                custom_widget.update_acquisition_selected_stylesheet()
-        
-        if len(self.selected_acquisitions) == 0:
-            self.groupBox_upload_settings.setEnabled(False)
-        else:
-            if self.staiotcraft_model.get_selected_model_name() != "" and self.staiotcraft_model.get_selected_project_name() != "":
-                self.groupBox_upload_settings.setEnabled(True)
-            else:
-                self.groupBox_upload_settings.setEnabled(False)
-
     def select_base_acquisitions_folder(self):
         # Open a dialog to select a directory
         folder_path = QFileDialog.getExistingDirectory(None, 'Select Folder')
@@ -536,18 +784,176 @@ class STDTDL_ExperimentalFeaturesPage():
                 else:
                     log.warning(f"Acquisition {folder}")
 
+    def _on_acquisitions_upload_button_clicked(self):
+        self.start_acquisitions_upload()
+        #asyncio.run(self.upload_acquisitions())
+        #self.executor.submit(self._run_async, self.upload_acquisitions)
+
+    def on_acquisition_uploaded(self, params):
+        """
+        Handle the acquisition uploaded signal.
+        This method updates the UI to reflect the uploaded acquisition.
+        """
+        acq_path = params["acq_path"]
+        acq_upload_dialog = params["acq_upload_dialog"]
+        self.upload_acquisition_button.setText(f"Acquisition Uploaded")
+        self.upload_acquisition_button.setIcon(QIcon(check_path))
+        self.acq_upload_error_label.setVisible(False)
+        acq_upload_dialog.loadingDone()
+    
+    def on_acquisition_upload_error(self, params):
+        """
+        Handle the acquisition upload error signal.
+        This method updates the UI to reflect the error during acquisition upload.
+        """
+        error_msg = params["error"]
+        acq_upload_dialog = params["acq_upload_dialog"]
+        self.acq_upload_error_label.setVisible(True)
+        self.acq_upload_error_label.setText(error_msg)
+        acq_upload_dialog.loadingDone()
+    
+    def start_acquisitions_upload(self):
+        """
+        Start the acquisitions upload process.
+        This method checks if the user is logged in and if there are selected acquisitions to upload.
+        If the conditions are met, it starts the upload process.
+        """
+        if not self.logged_in:
+            self.login_error_label.setText("Please login to ST AIoT Craft platform before uploading acquisitions.")
+            self.login_error_label.setVisible(True)
+            return
+        
+        if not self.selected_acquisitions:
+            self.login_error_label.setText("Please select at least one acquisition to upload.")
+            self.login_error_label.setVisible(True)
+            return
+        
+        for acq_path in self.selected_acquisitions:
+            self.acq_upload_error_label.setText("")
+            self.acq_upload_error_label.setVisible(False)
+            print(f"Uploading acquisition: {acq_path}")
+            acquisition_upload_dialog = StaticLoadingWindow("Uploading Acquisition", f"Please wait while the {acq_path} acquisition is being uploaded to the ST AIoT Craft platform...", self.page_widget)
+            self.controller.qt_app.processEvents()
+            
+            self.executor.submit(self._run_async, self.upload_acquisition, {"acq_path":acq_path,"acq_upload_dialog":acquisition_upload_dialog})
+            
+        #     try:
+        #         a = await self.staiotcraft_client.upload_acquisition(acq_path, os.path.basename(acq_path), self.selected_dataset.id, exists_ok = False)
+        #     except Exception as e:
+        #         log.error(f"Failed to upload acquisition: {acq_path}")
+        #         log.error(f"Error: {e}")
+        #         if hasattr(e, 'acquisition_names'):
+        #             e_msg = f"Error uploading {e.acquisition_names[0]} folder: {e.message}"
+        #         else:
+        #             e_msg = f"Error uploading {os.path.basename(acq_path)} folder: {e}"
+        #         self.acquisition_upload_dialog.message_label.setText(e_msg)
+        #         self.controller.qt_app.processEvents()
+        #         self.acquisition_uploaded[e_msg] = False
+        #         continue
+        #     self.acquisition_uploaded[acq_path] = True
+        #     print("Upload completed.")
+        #     self.acquisition_upload_dialogading_dialog.message_label.setText("Upload completed.")
+        #     self.controller.qt_app.processEvents()
+        
+        # if all(self.acquisition_uploaded.values()):
+        #     print('All acquisitions uploaded successfully.')
+        #     self.acquisition_upload_dialog.message_label.setText("All acquisitions uploaded successfully!!!")
+        #     self.controller.qt_app.processEvents()
+        #     self.upload_acquisition_button.setText("Acquisitions Uploaded")
+        #     self.upload_acquisition_button.setIcon(QIcon(check_path))
+        #     self.acq_upload_error_label.setVisible(False)
+        # else:
+        #     print('Error uploading acquisitions.')
+        #     error_string = "Failed to upload acquisitions: \n"
+        #     for e_msg, uploaded in self.acquisition_uploaded.items():
+        #         if not uploaded:
+        #             print(f"{e_msg}")
+        #             error_string += f"- {e_msg}\n"
+
+        #     self.acq_upload_error_label.setVisible(True)
+        #     self.acq_upload_error_label.setText(error_string)
+        #     self.controller.qt_app.processEvents()
+            
+        #     loading_dialog.message_label.setText("Error uploading acquisitions.")
+        #     self.controller.qt_app.processEvents()
+        
+        # loading_dialog.loadingDone()
+    
+    # def _run_async(self, coro_func, dialog=None):
+    #     if dialog is not None:
+    #         asyncio.run(coro_func(dialog))
+    #     else:
+    #         asyncio.run(coro_func())
+    
+    def _run_async(self, coro_func, *args, **kwargs):
+        """
+        Run an async coroutine in a new event loop in a background thread.
+        Ensures the thread's event loop is always fresh and not reused.
+        """
+        try:
+            self.event_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.event_loop)
+            self.event_loop.run_until_complete(coro_func(*args, **kwargs))
+        except Exception as e:
+            log.error(f"Error running async function: {e}")
+            #loop = asyncio.new_event_loop()
+            #asyncio.set_event_loop(loop)
+            #loop.run_until_complete(coro_func(*args, **kwargs))
+        finally:
+            self.event_loop.close()
+            #loop.close()
+            # Remove the event loop reference from the thread to avoid reuse of a closed loop
+            try:
+                del threading.current_thread().__dict__['_asyncio_event_loop']
+            except Exception:
+                pass
+
+    async def upload_acquisition(self, params):
+        """
+        Upload a single acquisition to the ST AIoT Craft platform.
+        This method is called by the executor to run the upload process asynchronously.
+        """
+        if not self.logged_in:
+            log.error("User is not logged in. Cannot upload acquisition.")
+            return
+
+        if not self.selected_dataset:
+            log.error("No dataset selected. Cannot upload acquisition.")
+            return
+        
+        acq_path = params["acq_path"]#.replace("\\", "/")  # Ensure the path is in the correct format
+        max_retries = 2
+        for attempt in range(max_retries):
+            try:
+                await self.staiotcraft_client.upload_acquisition(acq_path, os.path.basename(acq_path), self.selected_dataset.id, exists_ok = False)
+                self.sig_acquisition_uploaded.emit(params)
+                break
+            except Exception as e:
+                if hasattr(e, 'args') and any("Event loop is closed" in str(arg) for arg in e.args):
+                    if attempt < max_retries - 1:
+                        continue
+                else:
+                    e_msg = f"Error uploading acquisition {acq_path}"
+                    log.error(e_msg)
+                    if hasattr(e, 'message'):
+                        e_msg = f"Error uploading acquisition {acq_path}: {e.message}"
+                    params["error"] = e_msg
+                    self.sig_acquisition_upload_error.emit(params)
+                    self.acquisition_uploaded[e_msg] = False
+            
+    
     async def upload_acquisitions(self):
         loading_dialog = StaticLoadingWindow("Uploading Acquisitions", "Please wait while the acquisitions are being uploaded to the ST AIoT Craft platform...", self.page_widget)
         self.controller.qt_app.processEvents()
         
         # Configuring AI.
-        print('Configuring AI...')
-        loading_dialog.message_label.setText("Configuring AI...")
-        self.controller.qt_app.processEvents()
-        await self.staiotcraft_client.configure_ai(
-            model_name = self.staiotcraft_model.get_selected_model_name(),
-            project_name = self.staiotcraft_model.get_selected_project_name()
-        )
+        # print('Configuring AI...')
+        # loading_dialog.message_label.setText("Configuring AI...")
+        # self.controller.qt_app.processEvents()
+        # await self.staiotcraft_client.configure_ai(
+        #     model_name = self.staiotcraft_model.get_selected_model_name(),
+        #     project_name = self.staiotcraft_model.get_selected_project_name()
+        # )
         print('Uploading selected local acquisitions...')
         loading_dialog.message_label.setText("Uploading selected local acquisitions...")
         self.controller.qt_app.processEvents()
@@ -558,7 +964,7 @@ class STDTDL_ExperimentalFeaturesPage():
             loading_dialog.message_label.setText(acq_upload_msg)
             self.controller.qt_app.processEvents()
             try:
-                await self.staiotcraft_client.upload_acquisition(acq_path, os.path.basename(acq_path), exists_ok = False)
+                a = await self.staiotcraft_client.upload_acquisition(acq_path, os.path.basename(acq_path), self.selected_dataset.id, exists_ok = False)
             except Exception as e:
                 log.error(f"Failed to upload acquisition: {acq_path}")
                 log.error(f"Error: {e}")
@@ -615,8 +1021,15 @@ class STDTDL_ExperimentalFeaturesPage():
             self.selected_acquisitions.append(custom_widget.acq_folder_path)
         else:
             self.selected_acquisitions.remove(custom_widget.acq_folder_path)
-        self.staiotcraft_model.sig_acquisition_selected.emit(custom_widget.acq_folder_path)
+        
+        custom_widget.update_acquisition_selected_stylesheet()
+        
+        #self.staiotcraft_model.sig_acquisition_selected.emit(custom_widget.acq_folder_path)
         if self.upload_acquisition_button.text() == "Acquisitions Uploaded":
             self.upload_acquisition_button.setText("Upload Acquisitions")
             self.upload_acquisition_button.setIcon(QIcon(cloud_upload_path))
             self.acq_upload_error_label.setVisible(False)
+        if self.selected_dataset is not None and self.selected_acquisitions != []:
+            self.groupBox_upload_settings.setEnabled(True)
+        else:
+            self.groupBox_upload_settings.setEnabled(False)

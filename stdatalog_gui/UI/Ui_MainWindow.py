@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1102, 1086)
+        MainWindow.resize(1102, 1062)
         MainWindow.setMinimumSize(QSize(0, 0))
         palette = QPalette()
         brush = QBrush(QColor(0, 0, 0, 0))
@@ -994,7 +994,7 @@ class Ui_MainWindow(object):
         self.scrollArea_dt_settings.setWidgetResizable(True)
         self.widget_data_toolkit = QWidget()
         self.widget_data_toolkit.setObjectName(u"widget_data_toolkit")
-        self.widget_data_toolkit.setGeometry(QRect(0, 0, 306, 698))
+        self.widget_data_toolkit.setGeometry(QRect(0, 0, 980, 786))
         self.verticalLayout_16 = QVBoxLayout(self.widget_data_toolkit)
         self.verticalLayout_16.setSpacing(0)
         self.verticalLayout_16.setObjectName(u"verticalLayout_16")
@@ -1219,7 +1219,7 @@ class Ui_MainWindow(object):
         self.scrollArea_acq_upload.setWidgetResizable(True)
         self.widget_acq_upload = QWidget()
         self.widget_acq_upload.setObjectName(u"widget_acq_upload")
-        self.widget_acq_upload.setGeometry(QRect(0, 0, 599, 382))
+        self.widget_acq_upload.setGeometry(QRect(0, 0, 980, 786))
         sizePolicy1.setHeightForWidth(self.widget_acq_upload.sizePolicy().hasHeightForWidth())
         self.widget_acq_upload.setSizePolicy(sizePolicy1)
         self.verticalLayout_24 = QVBoxLayout(self.widget_acq_upload)
@@ -1357,12 +1357,12 @@ class Ui_MainWindow(object):
         self.verticalLayout_21.setSpacing(0)
         self.verticalLayout_21.setObjectName(u"verticalLayout_21")
         self.verticalLayout_21.setContentsMargins(0, 0, 0, 9)
-        self.groupBox_projects_list = QGroupBox(self.userLogin_frame)
-        self.groupBox_projects_list.setObjectName(u"groupBox_projects_list")
-        sizePolicy6.setHeightForWidth(self.groupBox_projects_list.sizePolicy().hasHeightForWidth())
-        self.groupBox_projects_list.setSizePolicy(sizePolicy6)
-        self.groupBox_projects_list.setMinimumSize(QSize(0, 0))
-        self.groupBox_projects_list.setStyleSheet(u"QGroupBox {\n"
+        self.groupBox_datasets_list = QGroupBox(self.userLogin_frame)
+        self.groupBox_datasets_list.setObjectName(u"groupBox_datasets_list")
+        sizePolicy6.setHeightForWidth(self.groupBox_datasets_list.sizePolicy().hasHeightForWidth())
+        self.groupBox_datasets_list.setSizePolicy(sizePolicy6)
+        self.groupBox_datasets_list.setMinimumSize(QSize(0, 0))
+        self.groupBox_datasets_list.setStyleSheet(u"QGroupBox {\n"
 "	border-radius: 5px;\n"
 "    border: transparent;\n"
 "	background-color: rgb(27, 29, 35);\n"
@@ -1382,44 +1382,82 @@ class Ui_MainWindow(object):
 "    background: 3px solid rgb(94, 106, 130);\n"
 "	border: 3px solid rgb(52, 59, 72);	\n"
 "}")
-        self.groupBox_projects_list.setFlat(False)
-        self.groupBox_projects_list.setCheckable(False)
-        self.verticalLayout_50 = QVBoxLayout(self.groupBox_projects_list)
+        self.groupBox_datasets_list.setFlat(False)
+        self.groupBox_datasets_list.setCheckable(False)
+        self.verticalLayout_50 = QVBoxLayout(self.groupBox_datasets_list)
         self.verticalLayout_50.setSpacing(6)
         self.verticalLayout_50.setObjectName(u"verticalLayout_50")
         self.verticalLayout_50.setContentsMargins(9, 9, 9, 9)
-        self.label_3 = QLabel(self.groupBox_projects_list)
+        self.label_3 = QLabel(self.groupBox_datasets_list)
         self.label_3.setObjectName(u"label_3")
         sizePolicy3.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
         self.label_3.setSizePolicy(sizePolicy3)
 
         self.verticalLayout_50.addWidget(self.label_3)
 
-        self.projects_listWidget = QListWidget(self.groupBox_projects_list)
-        self.projects_listWidget.setObjectName(u"projects_listWidget")
-        sizePolicy.setHeightForWidth(self.projects_listWidget.sizePolicy().hasHeightForWidth())
-        self.projects_listWidget.setSizePolicy(sizePolicy)
-        self.projects_listWidget.setStyleSheet(u"")
-        self.projects_listWidget.setTabKeyNavigation(False)
-        self.projects_listWidget.setProperty(u"showDropIndicator", False)
-        self.projects_listWidget.setDragEnabled(False)
-        self.projects_listWidget.setDragDropOverwriteMode(False)
-        self.projects_listWidget.setDragDropMode(QAbstractItemView.DragDropMode.NoDragDrop)
-        self.projects_listWidget.setDefaultDropAction(Qt.DropAction.CopyAction)
-        self.projects_listWidget.setAlternatingRowColors(False)
-        self.projects_listWidget.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        self.projects_listWidget.setTextElideMode(Qt.TextElideMode.ElideNone)
-        self.projects_listWidget.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
-        self.projects_listWidget.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
-        self.projects_listWidget.setMovement(QListView.Movement.Static)
-        self.projects_listWidget.setProperty(u"isWrapping", False)
-        self.projects_listWidget.setResizeMode(QListView.ResizeMode.Fixed)
-        self.projects_listWidget.setViewMode(QListView.ViewMode.ListMode)
+        self.datasets_listWidget = QListWidget(self.groupBox_datasets_list)
+        self.datasets_listWidget.setObjectName(u"datasets_listWidget")
+        sizePolicy.setHeightForWidth(self.datasets_listWidget.sizePolicy().hasHeightForWidth())
+        self.datasets_listWidget.setSizePolicy(sizePolicy)
+        self.datasets_listWidget.setStyleSheet(u"")
+        self.datasets_listWidget.setTabKeyNavigation(False)
+        self.datasets_listWidget.setProperty(u"showDropIndicator", False)
+        self.datasets_listWidget.setDragEnabled(False)
+        self.datasets_listWidget.setDragDropOverwriteMode(False)
+        self.datasets_listWidget.setDragDropMode(QAbstractItemView.DragDropMode.NoDragDrop)
+        self.datasets_listWidget.setDefaultDropAction(Qt.DropAction.CopyAction)
+        self.datasets_listWidget.setAlternatingRowColors(False)
+        self.datasets_listWidget.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.datasets_listWidget.setTextElideMode(Qt.TextElideMode.ElideNone)
+        self.datasets_listWidget.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.datasets_listWidget.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.datasets_listWidget.setMovement(QListView.Movement.Static)
+        self.datasets_listWidget.setProperty(u"isWrapping", False)
+        self.datasets_listWidget.setResizeMode(QListView.ResizeMode.Fixed)
+        self.datasets_listWidget.setViewMode(QListView.ViewMode.ListMode)
 
-        self.verticalLayout_50.addWidget(self.projects_listWidget)
+        self.verticalLayout_50.addWidget(self.datasets_listWidget)
 
 
-        self.verticalLayout_21.addWidget(self.groupBox_projects_list)
+        self.verticalLayout_21.addWidget(self.groupBox_datasets_list)
+
+        self.frame_new_dataset = QFrame(self.userLogin_frame)
+        self.frame_new_dataset.setObjectName(u"frame_new_dataset")
+        self.frame_new_dataset.setMinimumSize(QSize(0, 0))
+        self.frame_new_dataset.setFrameShape(QFrame.Shape.StyledPanel)
+        self.frame_new_dataset.setFrameShadow(QFrame.Shadow.Raised)
+        self.verticalLayout_25 = QVBoxLayout(self.frame_new_dataset)
+        self.verticalLayout_25.setObjectName(u"verticalLayout_25")
+        self.verticalLayout_25.setContentsMargins(0, 9, 0, 0)
+        self.create_new_dataset_button = QPushButton(self.frame_new_dataset)
+        self.create_new_dataset_button.setObjectName(u"create_new_dataset_button")
+        self.create_new_dataset_button.setEnabled(True)
+        sizePolicy1.setHeightForWidth(self.create_new_dataset_button.sizePolicy().hasHeightForWidth())
+        self.create_new_dataset_button.setSizePolicy(sizePolicy1)
+        self.create_new_dataset_button.setMinimumSize(QSize(0, 30))
+        self.create_new_dataset_button.setStyleSheet(u"QPushButton {\n"
+"	border: 2px solid rgb(51, 71, 51);\n"
+"	border-radius: 5px;	\n"
+"	background-color: rgb(51, 71, 51);\n"
+"	font: 700 9pt \"Segoe UI\";\n"
+"}\n"
+"QPushButton:hover {\n"
+"	background-color: rgb(57, 81, 57);\n"
+"	border: 2px solid rgb(61, 87, 61);\n"
+"}\n"
+"QPushButton:pressed {	\n"
+"	background-color: rgb(34, 48, 34);\n"
+"	border: 2px solid rgb(42, 60, 42);\n"
+"}\n"
+"QPushButton:disabled {	\n"
+"	background-color: rgb(35, 40, 49);\n"
+"	border: 2px solid rgb(43, 50, 61);\n"
+"}")
+
+        self.verticalLayout_25.addWidget(self.create_new_dataset_button)
+
+
+        self.verticalLayout_21.addWidget(self.frame_new_dataset, 0, Qt.AlignmentFlag.AlignRight)
 
 
         self.horizontalLayout_10.addWidget(self.userLogin_frame)
@@ -1832,7 +1870,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stacked_widget.setCurrentIndex(1)
+        self.stacked_widget.setCurrentIndex(2)
         self.tabWidget.setCurrentIndex(0)
 
 
@@ -1865,14 +1903,15 @@ class Ui_MainWindow(object):
         self.howto_button.setText(QCoreApplication.translate("MainWindow", u"HOW-TO", None))
         self.login_button.setText(QCoreApplication.translate("MainWindow", u"Login", None))
         self.login_error_label.setText(QCoreApplication.translate("MainWindow", u"Error label", None))
-        self.groupBox_projects_list.setTitle("")
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Projects List", None))
+        self.groupBox_datasets_list.setTitle("")
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"My Datasets", None))
+        self.create_new_dataset_button.setText(QCoreApplication.translate("MainWindow", u"Create new Dataset", None))
         self.groupBox_inner_base_acquisition_selection.setTitle(QCoreApplication.translate("MainWindow", u"Acquisitions Base Folder", None))
         self.base_acq_folder_textEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Select a folder containing valid HSDatalog acquisitions folders", None))
         self.base_acq_folder_button.setText(QCoreApplication.translate("MainWindow", u"Browse", None))
         self.groupBox_acquisitions_list.setTitle("")
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Acquisitions List", None))
-        self.groupBox_upload_settings.setTitle(QCoreApplication.translate("MainWindow", u"The following button will be enabled only once a Model and at least one Acquisition Folder are selected.", None))
+        self.groupBox_upload_settings.setTitle(QCoreApplication.translate("MainWindow", u"The following button will be enabled only once a Dataset and at least one Acquisition Folder are selected.", None))
         self.acq_upload_error_label.setText(QCoreApplication.translate("MainWindow", u"Error label", None))
         self.upload_acquisition_button.setText(QCoreApplication.translate("MainWindow", u" Upload Acquisitions", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.staiotcraft_tab), QCoreApplication.translate("MainWindow", u"ST AIoT Craft - Acquisitions Upload", None))

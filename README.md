@@ -19,7 +19,7 @@ The package offers a set of base classes and utilities to create custom GUI appl
 - Device configuration and control
 - Application logging and error management display
 - Support for multiple platforms (Windows, Linux, macOS)
-- Compatible with Python 3.10 to 3.12
+- Compatible with Python 3.10 to 3.13
 - Communication with various hardware devices
 
 ## Installation
@@ -29,12 +29,12 @@ NOTE: Be sure to satisfy the requirements before installing the package ([see Re
 
 On Windows:
 ```sh
-python -m pip install dist\stdatalog_gui-1.1.0-py3-none-any.whl
+python -m pip install dist\stdatalog_gui-1.2.0-py3-none-any.whl
 ```
 
 On Linux/macOS:
 ```sh
-python3 -m pip install dist/stdatalog_gui-1.1.0-py3-none-any.whl
+python3 -m pip install dist/stdatalog_gui-1.2.0-py3-none-any.whl
 ```
 
 The package could also be installed as part of the **[STDATALOG-PYSDK](https://github.com/STMicroelectronics/stdatalog-pysdk)** by launching the SDK installation script from the SDK root folder:
@@ -59,7 +59,7 @@ The package requires the following dependencies:
 - **[stdatalog_dtk](https://github.com/STMicroelectronics/stdatalog_dtk)**
 - numpy==2.2.4
 - pyqtgraph==0.13.7
-- setuptools
+- setuptools<81
 - pyaudio==0.2.14
 - PySide6
 	- 6.9.0 on Windows, Linux not aarch64 machines and macOS arm64 machines

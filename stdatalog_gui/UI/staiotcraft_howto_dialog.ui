@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1274</width>
-    <height>1026</height>
+    <height>807</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -161,9 +161,9 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>-10</y>
-              <width>1194</width>
-              <height>1249</height>
+              <y>0</y>
+              <width>1208</width>
+              <height>740</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -206,43 +206,30 @@ li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Segoe UI'; font-size:48pt; font-weight:700; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#ffdd40;&quot;&gt;HOW-TO&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:36pt;&quot;&gt;Upload STDatalog Acquisition folders&lt;br /&gt;into ST AIoT Craft&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:36pt;&quot;&gt;Upload STDatalog Acquisition folders&lt;br /&gt;into &lt;/span&gt;&lt;a href=&quot;https://staiotcraft.st.com/index.html&quot;&gt;&lt;span style=&quot; font-size:36pt; text-decoration: underline; color:#69fcff;&quot;&gt;ST AIoT Craft&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16px; font-weight:400;&quot;&gt;With ST AIoT Craft you can experiment with advanced edge AI features integrated in our smart sensors.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt; font-weight:400;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;1. Access the ST AIoT Craft Tool:&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Go to the &lt;/span&gt;&lt;a href=&quot;https://staiotcraft.st.com/index.html&quot;&gt;&lt;span style=&quot; font-size:16pt; text-decoration: underline; color:#00b7c3;&quot;&gt;ST AIoT Craft&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; website using your browser (https://staiotcraft.st.com)&lt;br /&gt;&lt;/span&gt;&lt;span style=&quot; font-size:12pt; color:#ffdd40;&quot;&gt;[Note]:&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; Currently, the only supported browser is &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400; font-style:italic; text-decoration: underline;&quot;&gt;Google Chrome&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; color:#ffdd40;&quot;&gt;[Note]:&lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;  &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;If you don't have credentials, you can create an account for free from the opened web page.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;2. Create a New Project or Clone an Existing One:&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- You can create a new project from scratch in the &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400; font-style:italic; text-decoration: underline;&quot;&gt;My projects&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; section by clicking the &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400; font-style:italic; text-decoration: underline;&quot;&gt;New Project&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; button.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- &lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;[or]&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; You can clone an existing project in the &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400; font-style:italic; text-decoration: underline;&quot;&gt;Project examples&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; section by selecting it and clicking the three-dot icon next to the yellow &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400; font-style:italic; text-decoration: underline;&quot;&gt;Try out&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; button.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;3. Create Dataset Containers:&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- You can create one or more dataset containers in the &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400; font-style:italic; text-decoration: underline;&quot;&gt;My datasets&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; section. These will be the containers for the datasets that will be uploaded from the STDatalog GUI.&lt;br /&gt;   &lt;/span&gt;&lt;span style=&quot; font-size:12pt; color:#ffdd40;&quot;&gt;[Note]&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400; color:#ffdd40;&quot;&gt;:&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; Assign at least two tag classes to the dataset container.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;4. [&lt;/span&gt;&lt;span style=&quot; font-size:16pt; text-decoration: underline;&quot;&gt;Only if You Created a New Project&lt;/span&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;] Create and Associate Models to the Project:&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;-&lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;If you created a project from scratch, open it by selecting it in the &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400; font-style:italic; text-decoration: underline;&quot;&gt;My projects&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt; section and click on &lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400; font-style:italic; text-decoration: underline;&quot;&gt;New model&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Select the board with which the acquisition was made.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Select the smart sensor.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Complete the model creation by assigning it a name, a dataset, and tag classes (contained in the dataset)&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;5. Enable the Experimental &amp;quot;ST AIoT Craft - Acquisitions Upload&amp;quot; Feature in the STDatalog GUI:&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt; font-weight:400;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;1. Enable the Experimental &amp;quot;ST AIoT Craft - Acquisitions Upload&amp;quot; Feature in the STDatalog GUI:&lt;/span&gt;&lt;/p&gt;
 &lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Click the dedicated radio button to enable this functionality. The necessary Python dependencies will be installed if not already present.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;6. Click the Login Button to authenticate the STDatalog GUI application:&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;2. Click the Login Button to authenticate the STDatalog GUI application:&lt;/span&gt;&lt;/p&gt;
 &lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Enter your ST AIoT Craft credentials in the browser window that will open automatically.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- After completing the login procedure, you should see the list of your projects in the STDatalog GUI.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;7. Select a Model to which you want to upload one or more acquisition folders&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;8. Click the Browse button located below the Login button and select the acquisitions you want to upload&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Here you have to select a folder that contains valid STDatalog acquisition folders.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;9. Click the &amp;quot;Upload the Selected Acquisitions&amp;quot; Button to upload your selected acquisitions:&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Please note that this button is enabled only if a model and at least one acquisition folder are selected.&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- After the Upload process is completed, you will find your uploaded acquisitions in your ST AIoT Craft environment (within the dataset associated to the Model previously selected).&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- After completing the login procedure, you should see the list of your Datasets container in the STDatalog GUI.&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;3. Select a Dataset to which you want to upload one or more acquisition folders&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;4. Click the Browse button located below the Login button and select the acquisitions you want to upload&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Here you have to select at least a folder that contains valid STDatalog acquisition folders.&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt;&quot;&gt;5. Click the &amp;quot;Upload the Selected Acquisitions&amp;quot; Button to upload your selected acquisitions:&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- Please note that this button is enabled only if a Dataset container and at least one acquisition folder are selected.&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:400;&quot;&gt;- After the Upload process is completed, you will find your uploaded acquisitions in your ST AIoT Craft environment (within the Dataset containerpreviously selected).&lt;/span&gt;&lt;/p&gt;
 &lt;p align=&quot;justify&quot; style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt; font-weight:400;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="textFormat">
-                <enum>Qt::MarkdownText</enum>
+                <enum>Qt::TextFormat::MarkdownText</enum>
                </property>
                <property name="scaledContents">
                 <bool>false</bool>
                </property>
                <property name="alignment">
-                <set>Qt::AlignCenter</set>
+                <set>Qt::AlignmentFlag::AlignCenter</set>
                </property>
                <property name="wordWrap">
                 <bool>true</bool>
@@ -280,10 +267,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
          <string notr="true">background-color: rgb(33, 37, 43);</string>
         </property>
         <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
+         <enum>QFrame::Shape::NoFrame</enum>
         </property>
         <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
+         <enum>QFrame::Shadow::Raised</enum>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <property name="spacing">
@@ -304,10 +291,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
          <item>
           <widget class="QFrame" name="frame_label_bottom">
            <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
+            <enum>QFrame::Shape::NoFrame</enum>
            </property>
            <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
+            <enum>QFrame::Shadow::Raised</enum>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <property name="spacing">
@@ -360,7 +347,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
                <string/>
               </property>
               <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
               </property>
              </widget>
             </item>

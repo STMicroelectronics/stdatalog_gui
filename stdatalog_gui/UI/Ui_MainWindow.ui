@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1102</width>
-    <height>1086</height>
+    <height>1062</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -940,7 +940,7 @@ QPushButton:pressed {
                    <string notr="true">background: transparent;</string>
                   </property>
                   <property name="currentIndex">
-                   <number>1</number>
+                   <number>2</number>
                   </property>
                   <widget class="QWidget" name="page_connection">
                    <layout class="QVBoxLayout" name="page_connection_vlayout">
@@ -1239,8 +1239,8 @@ QRadioButton::indicator:checked {
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>496</width>
-                             <height>1003</height>
+                             <width>482</width>
+                             <height>61</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -1445,8 +1445,8 @@ QRadioButton::indicator:checked {
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>475</width>
-                             <height>1003</height>
+                             <width>96</width>
+                             <height>26</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1607,8 +1607,8 @@ QRadioButton::indicator:checked {
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>306</width>
-                             <height>698</height>
+                             <width>980</width>
+                             <height>786</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -2067,8 +2067,8 @@ QRadioButton::indicator:checked {
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>599</width>
-                             <height>382</height>
+                             <width>980</width>
+                             <height>786</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2366,7 +2366,7 @@ color: red;</string>
                                       <number>9</number>
                                      </property>
                                      <item>
-                                      <widget class="QGroupBox" name="groupBox_projects_list">
+                                      <widget class="QGroupBox" name="groupBox_datasets_list">
                                        <property name="sizePolicy">
                                         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                                          <horstretch>0</horstretch>
@@ -2435,12 +2435,12 @@ QRadioButton::indicator:checked {
                                            </sizepolicy>
                                           </property>
                                           <property name="text">
-                                           <string>Projects List</string>
+                                           <string>My Datasets</string>
                                           </property>
                                          </widget>
                                         </item>
                                         <item>
-                                         <widget class="QListWidget" name="projects_listWidget">
+                                         <widget class="QListWidget" name="datasets_listWidget">
                                           <property name="sizePolicy">
                                            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                                             <horstretch>0</horstretch>
@@ -2494,6 +2494,78 @@ QRadioButton::indicator:checked {
                                           </property>
                                           <property name="viewMode">
                                            <enum>QListView::ViewMode::ListMode</enum>
+                                          </property>
+                                         </widget>
+                                        </item>
+                                       </layout>
+                                      </widget>
+                                     </item>
+                                     <item alignment="Qt::AlignmentFlag::AlignRight">
+                                      <widget class="QFrame" name="frame_new_dataset">
+                                       <property name="minimumSize">
+                                        <size>
+                                         <width>0</width>
+                                         <height>0</height>
+                                        </size>
+                                       </property>
+                                       <property name="frameShape">
+                                        <enum>QFrame::Shape::StyledPanel</enum>
+                                       </property>
+                                       <property name="frameShadow">
+                                        <enum>QFrame::Shadow::Raised</enum>
+                                       </property>
+                                       <layout class="QVBoxLayout" name="verticalLayout_25">
+                                        <property name="leftMargin">
+                                         <number>0</number>
+                                        </property>
+                                        <property name="topMargin">
+                                         <number>9</number>
+                                        </property>
+                                        <property name="rightMargin">
+                                         <number>0</number>
+                                        </property>
+                                        <property name="bottomMargin">
+                                         <number>0</number>
+                                        </property>
+                                        <item>
+                                         <widget class="QPushButton" name="create_new_dataset_button">
+                                          <property name="enabled">
+                                           <bool>true</bool>
+                                          </property>
+                                          <property name="sizePolicy">
+                                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                            <horstretch>0</horstretch>
+                                            <verstretch>0</verstretch>
+                                           </sizepolicy>
+                                          </property>
+                                          <property name="minimumSize">
+                                           <size>
+                                            <width>0</width>
+                                            <height>30</height>
+                                           </size>
+                                          </property>
+                                          <property name="styleSheet">
+                                           <string notr="true">QPushButton {
+	border: 2px solid rgb(51, 71, 51);
+	border-radius: 5px;	
+	background-color: rgb(51, 71, 51);
+	font: 700 9pt &quot;Segoe UI&quot;;
+}
+QPushButton:hover {
+	background-color: rgb(57, 81, 57);
+	border: 2px solid rgb(61, 87, 61);
+}
+QPushButton:pressed {	
+	background-color: rgb(34, 48, 34);
+	border: 2px solid rgb(42, 60, 42);
+}
+QPushButton:disabled {	
+	background-color: rgb(35, 40, 49);
+	border: 2px solid rgb(43, 50, 61);
+}</string>
+                                          </property>
+                                          <property name="text">
+                                           <string>Create new Dataset</string>
                                           </property>
                                          </widget>
                                         </item>
@@ -2951,7 +3023,7 @@ QRadioButton::indicator:checked {
 }</string>
                               </property>
                               <property name="title">
-                               <string>The following button will be enabled only once a Model and at least one Acquisition Folder are selected.</string>
+                               <string>The following button will be enabled only once a Dataset and at least one Acquisition Folder are selected.</string>
                               </property>
                               <property name="flat">
                                <bool>false</bool>
