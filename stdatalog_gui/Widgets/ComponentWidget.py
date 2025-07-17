@@ -308,9 +308,10 @@ class ComponentWidget(QWidget):
     def clicked_browse_dt_button(self):
         json_filter = "JSON Device Template files (*.json *.JSON)"
         filepath = QFileDialog.getOpenFileName(filter=json_filter)
-        self.input_file_path = filepath[0]
-        self.dt_value.setText(self.input_file_path)
-        self.controller.load_local_device_template(self.input_file_path)
+        if filepath[0]:  # Check if a file was actually selected (not cancelled)
+            self.input_file_path = filepath[0]
+            self.dt_value.setText(self.input_file_path)
+            self.controller.load_local_device_template(self.input_file_path)
 
     @Slot()
     def clicked_show_button(self):
