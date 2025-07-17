@@ -299,28 +299,31 @@ class CommandWidget(QWidget):
         if "_mlc" in self.comp_name:
             ucf_filter = "UCF Configuration files (*.ucf *.UCF)"
             filepath = QFileDialog.getOpenFileName(filter=ucf_filter)
-            self.loaded_file_path[file_id] = filepath[0]
-            self.loaded_file_value[file_id].setText(self.loaded_file_path[file_id])
-            if MLC_CmdValues.mlc_ucf in self.loaded_file_path and self.loaded_file_path[MLC_CmdValues.mlc_ucf] != "":
-                self.command_send_button.setEnabled(True)
-                self.command_send_button.setStyleSheet(STDTDL_PushButton.green)
-            else:
-                self.command_send_button.setEnabled(False)
-                self.command_send_button.setStyleSheet(STDTDL_PushButton.invalid)
+            if filepath[0]:  # Check if a file was actually selected (not cancelled)
+                self.loaded_file_path[file_id] = filepath[0]
+                self.loaded_file_value[file_id].setText(self.loaded_file_path[file_id])
+                if MLC_CmdValues.mlc_ucf in self.loaded_file_path and self.loaded_file_path[MLC_CmdValues.mlc_ucf] != "":
+                    self.command_send_button.setEnabled(True)
+                    self.command_send_button.setStyleSheet(STDTDL_PushButton.green)
+                else:
+                    self.command_send_button.setEnabled(False)
+                    self.command_send_button.setStyleSheet(STDTDL_PushButton.invalid)
         elif "_ispu" in self.comp_name:
             ext_filter = filter
             filepath = QFileDialog.getOpenFileName(filter=ext_filter)
-            self.loaded_file_path[file_id] = filepath[0]
-            self.loaded_file_value[file_id].setText(self.loaded_file_path[file_id])
-            if ISPU_CmdValues.ispu_ucf in self.loaded_file_path and self.loaded_file_path[ISPU_CmdValues.ispu_ucf] != "" and \
-               ISPU_CmdValues.ispu_json in self.loaded_file_path and self.loaded_file_path[ISPU_CmdValues.ispu_json] != "":
-                self.command_send_button.setEnabled(True)
-                self.command_send_button.setStyleSheet(STDTDL_PushButton.green)
-            else:
-                self.command_send_button.setEnabled(False)
-                self.command_send_button.setStyleSheet(STDTDL_PushButton.invalid)
+            if filepath[0]:  # Check if a file was actually selected (not cancelled)
+                self.loaded_file_path[file_id] = filepath[0]
+                self.loaded_file_value[file_id].setText(self.loaded_file_path[file_id])
+                if ISPU_CmdValues.ispu_ucf in self.loaded_file_path and self.loaded_file_path[ISPU_CmdValues.ispu_ucf] != "" and \
+                   ISPU_CmdValues.ispu_json in self.loaded_file_path and self.loaded_file_path[ISPU_CmdValues.ispu_json] != "":
+                    self.command_send_button.setEnabled(True)
+                    self.command_send_button.setStyleSheet(STDTDL_PushButton.green)
+                else:
+                    self.command_send_button.setEnabled(False)
+                    self.command_send_button.setStyleSheet(STDTDL_PushButton.invalid)
         else:
             filepath = QFileDialog.getOpenFileName()
-            self.loaded_file_path[file_id] = filepath[0]
-            self.loaded_file_value[file_id].setText(self.loaded_file_path[file_id])
-            self.controller.upload_file(self.loaded_file_path[file_id])
+            if filepath[0]:  # Check if a file was actually selected (not cancelled)
+                self.loaded_file_path[file_id] = filepath[0]
+                self.loaded_file_value[file_id].setText(self.loaded_file_path[file_id])
+                self.controller.upload_file(self.loaded_file_path[file_id])
