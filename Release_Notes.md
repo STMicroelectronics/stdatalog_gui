@@ -11,7 +11,7 @@ header-includes: <link rel="icon" type="image/x-icon" href="_htmresc/favicon.png
 # Release Notes for <mark>stdatalog_gui</mark> 
 Copyright &copy; 2025 STMicroelectronics
     
-[![ST logo](../_htmresc/st_logo_2020.png)](https://www.st.com){.logo}
+[![ST logo](_htmresc/st_logo_2020.png)](https://www.st.com){.logo}
 </center>
 
 
@@ -25,6 +25,23 @@ The package is part of the **[STDATALOG-PYSDK](https://github.com/STMicroelectro
 
 ::: {.col-sm-12 .col-lg-8}
 # Update History
+
+::: {.collapse}
+<input type="checkbox" id="collapse-section4" checked aria-hidden="true">
+<label for="collapse-section4" aria-hidden="true">v1.2.1 / 29-Aug-25</label>
+<div>
+
+
+## Main Changes
+
+### Patch Release
+
+- Solved issue #1 - pull request #2: accepted proposal from @YumTaha
+- Fixed custom Device Model save and update
+
+
+</div>
+:::
 
 ::: {.collapse}
 <input type="checkbox" id="collapse-section3" checked aria-hidden="true">

@@ -302,7 +302,8 @@ class HSDLogControlWidget(ComponentWidget):
     @Slot()
     def clicked_load_config_button(self):
         fname = QFileDialog.getOpenFileName(None, "Load a Device Configuration file", "device_config", "JSON (*.json)")
-        self.controller.load_config(fname[0])
+        if fname[0]:  # Check if a file was actually selected (not cancelled)
+            self.controller.load_config(fname[0])
 
     @Slot()
     def checkBox_offline_checked(self, state):

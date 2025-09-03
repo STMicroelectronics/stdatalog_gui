@@ -21,7 +21,7 @@ with open("LICENSE.md", "r") as fh:
 
 setuptools.setup(
     name="stdatalog_gui",
-    version="1.2.0",
+    version="1.2.1",
     author="SRA-ASP",
     author_email="matteo.ronchi@st.com",
     description="STMicroelectronics UI Toolkit based on DTDL and PySide6.",
@@ -44,9 +44,9 @@ setuptools.setup(
         "Topic :: Software Development :: Embedded Systems"
     ],
     install_requires=[
-        "stdatalog_pnpl==1.2.0",
-        "stdatalog_core==1.2.0",
-        "stdatalog_dtk==1.2.0",
+        "stdatalog_pnpl==1.2.1",
+        "stdatalog_core==1.2.1",
+        "stdatalog_dtk==1.2.1",
         "numpy==2.2.4",
         "pyqtgraph==0.13.7",
         "setuptools<81",

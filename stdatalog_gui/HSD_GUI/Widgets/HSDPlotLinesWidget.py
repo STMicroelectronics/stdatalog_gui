@@ -134,15 +134,16 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
     def clicked_load_out_fmt_button(self):
         json_filter = "JSON Output format description Files (*.json *.JSON)"
         filepath = QFileDialog.getOpenFileName(filter=json_filter)
-        self.__load_ispu_out_fmt(filepath[0])
-        if self.ispu_output_format is not None:
-            for id in range(len(self.legend.items)):
-                if id != 0:
-                    self.legend.removeItem(self.graph_curves[id])#
-                    self.legend.layout.removeAt(id)
-            self.legend.addItem(pg.PlotDataItem(pen=pg.mkPen(0,0,0,0)),"")
-            for i, of in enumerate(self.ispu_output_format):
-                self.legend.addItem(self.graph_curves[i], of.get("name",""))
+        if filepath[0]:  # Check if a file was actually selected (not cancelled)
+            self.__load_ispu_out_fmt(filepath[0])
+            if self.ispu_output_format is not None:
+                for id in range(len(self.legend.items)):
+                    if id != 0:
+                        self.legend.removeItem(self.graph_curves[id])#
+                        self.legend.layout.removeAt(id)
+                self.legend.addItem(pg.PlotDataItem(pen=pg.mkPen(0,0,0,0)),"")
+                for i, of in enumerate(self.ispu_output_format):
+                    self.legend.addItem(self.graph_curves[i], of.get("name",""))
     
     @Slot()
     def clicked_out_fmt_plot_settings_button(self):

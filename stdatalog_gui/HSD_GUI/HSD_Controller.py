@@ -437,7 +437,8 @@ class HSD_Controller(STDTDL_Controller):
             dev_template_json = json.load(json_file)
             dtdl_model_name = os.path.splitext(os.path.basename(input_dt_file_path))[0]
             json_file.close()
-            DeviceCatalogManager.add_dtdl_model(board_id, fw_id, dtdl_model_name, str(dev_template_json))
+            dev_template_json_str = json.dumps(dev_template_json)
+            DeviceCatalogManager.add_dtdl_model(board_id, fw_id, dtdl_model_name, dev_template_json_str)
 
     def is_sensor_enabled(self, comp_name, d_id = 0):
         return self.hsd_link.get_sensor_enable(d_id, comp_name)

@@ -1,6 +1,6 @@
-stdatalog_pnpl==1.2.0
-stdatalog_core==1.2.0
-stdatalog_dtk==1.2.0
+stdatalog_pnpl==1.2.1
+stdatalog_core==1.2.1
+stdatalog_dtk==1.2.1
 numpy==2.2.4
 pyqtgraph==0.13.7
 setuptools<81
