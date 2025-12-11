@@ -108,6 +108,9 @@ class HSD_MainWindow(STDTDL_MainWindow):
         self.controller.stop_log()
         if self.controller.hsd is not None:
             self.controller.hsd.close_plot_threads()
+        if self.controller.is_hsd_link_serial():
+            self.controller.sensors_threads[0].stop()
+            self.controller.hsd_link.close()
         event.accept()
 
     def keyPressEvent(self, event):

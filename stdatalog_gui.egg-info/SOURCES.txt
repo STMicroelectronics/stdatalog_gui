@@ -6,7 +6,6 @@ setup.py
 stdatalog_gui/LICENSE.md
 stdatalog_gui/STDTDL_Controller.py
 stdatalog_gui/STDTDL_DeviceConfigPage.py
-stdatalog_gui/STDTDL_ExperimentalFeaturesPage copy.py
 stdatalog_gui/STDTDL_ExperimentalFeaturesPage.py
 stdatalog_gui/STDTDL_MainWindow.py
 stdatalog_gui/__init__.py
@@ -80,6 +79,7 @@ stdatalog_gui/HSD_MC_GUI/UI/images/mcp_error_connection_1.png
 stdatalog_gui/HSD_MC_GUI/UI/images/mcp_error_connection_2.png
 stdatalog_gui/HSD_MC_GUI/Widgets/HSD_MC_CheckMCPConnectionWindow.py
 stdatalog_gui/HSD_MC_GUI/Widgets/HSD_MC_ClassifierOutputWidget.py
+stdatalog_gui/HSD_MC_GUI/Widgets/HSD_MC_ConnectionWidget.py
 stdatalog_gui/HSD_MC_GUI/Widgets/HSD_MC_ControlWidget.py
 stdatalog_gui/HSD_MC_GUI/Widgets/HSD_MC_FastTelemetriesPlotLinesWidget.py
 stdatalog_gui/HSD_MC_GUI/Widgets/HSD_MC_FastTelemetriesPlotWidget.py
@@ -168,6 +168,7 @@ stdatalog_gui/UI/icons/pop-out_18dp_E8EAED.svg
 stdatalog_gui/UI/icons/power_18dp_E8EAED.svg
 stdatalog_gui/UI/icons/science_18dp_E8EAED.svg
 stdatalog_gui/UI/images/AI_Output.png
+stdatalog_gui/UI/images/CubeAI_STM32.png
 stdatalog_gui/UI/images/ISPU.png
 stdatalog_gui/UI/images/Motor_Anomaly_Class.png
 stdatalog_gui/UI/images/Motor_Belt_Class.png

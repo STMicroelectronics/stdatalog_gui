@@ -29,12 +29,12 @@ NOTE: Be sure to satisfy the requirements before installing the package ([see Re
 
 On Windows:
 ```sh
-python -m pip install dist\stdatalog_gui-1.2.0-py3-none-any.whl
+python -m pip install dist\stdatalog_gui-1.3.0-py3-none-any.whl
 ```
 
 On Linux/macOS:
 ```sh
-python3 -m pip install dist/stdatalog_gui-1.2.0-py3-none-any.whl
+python3 -m pip install dist/stdatalog_gui-1.3.0-py3-none-any.whl
 ```
 
 The package could also be installed as part of the **[STDATALOG-PYSDK](https://github.com/STMicroelectronics/stdatalog-pysdk)** by launching the SDK installation script from the SDK root folder:
@@ -57,18 +57,19 @@ The package requires the following dependencies:
 - **[stdatalog_pnpl](https://github.com/STMicroelectronics/stdatalog_pnpl)**
 - **[stdatalog_core](https://github.com/STMicroelectronics/stdatalog_core)**
 - **[stdatalog_dtk](https://github.com/STMicroelectronics/stdatalog_dtk)**
-- numpy==2.2.4
+- numpy==2.3.4
 - pyqtgraph==0.13.7
 - setuptools<81
 - pyaudio==0.2.14
 - PySide6
-	- 6.9.0 on Windows, Linux not aarch64 machines and macOS arm64 machines
+	- 6.10.0 on Windows, Linux not aarch64 machines
+	- 6.9.0 on macOS arm64 machines
 	- 6.8.0.2 on Linux aarch64 machines
 	- 6.7.3 on macOS x86_64 machines
 
 ## Usage
 Here is a basic example of how to use the `stdatalog_gui` package to create a simple GUI application (HSD_GUI) for high-speed data logging:
-> NOTE: Please, connect a compatible device (board flashed with FP-SNS-DATALOG2 or FP-IND-DATALOGMC) to your PC before running the example 
+> NOTE: Please, connect a compatible device (board flashed with FP-SNS-DATALOG2, FP-IND-DATALOGMC or STSW-SDATALOG) to your PC before running the example 
 
 ```python
 from PySide6.QtWidgets import QApplication
@@ -95,7 +96,8 @@ app.exec()
 For more complete examples, please refer to the following STDATALOG-PYSDK examples:
 - **[stdatalog_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog/GUI/stdatalog_GUI.py)**
 - **[stdatalog_MC_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/Datalog/stdatalog_MC_GUI.py)**
-- **[stdatalog_MC_AI_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/AI/stdatalog_MC_AI_GUI.py)**
+- **[stdatalog_MC_CubeAI_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/AI/CubeAI/stdatalog_MC_CubeAI_GUI.py)**
+- **[stdatalog_MC_NanoEdgeAI_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/AI/CubeAI/stdatalog_MC_NanoEdgeAI_GUI.py)**
 - **[ultrasound_fft_app.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_ultrasound_fft/ultrasound_fft_app.py)**
 
 ## License

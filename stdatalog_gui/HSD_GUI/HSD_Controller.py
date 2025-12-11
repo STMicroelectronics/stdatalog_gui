@@ -245,13 +245,16 @@ class HSD_Controller(STDTDL_Controller):
                             comp_name = self.data_reader_params[data_ch].get("comp_name")
                             self.data_reader_params[data_ch].get("data_reader").feed_data(DataClass(comp_name, data[4:]))
                             file = self.data_reader_params[data_ch].get("file")
-                            if not file.closed:
-                                file.write(data)
+                            if file is not None:
+                                if not file.closed:
+                                    file.write(data)
                         self.prev_cnts[data_ch] = curr_cnt
 
             self.hsd_link.flush()
             time.sleep(1)
-            self.data_reader_params[0].get("file").close()
+            file = self.data_reader_params[0].get("file")
+            if file is not None:
+                file.close()
 
         def stop(self):
             self.stop_event.set()
@@ -780,6 +783,13 @@ class HSD_Controller(STDTDL_Controller):
         if type(self.hsd_link) == HSDLink_v1:
             res = self.hsd_link.start_log(self.device_id, save_files=self.save_files_flag)
         else:
+            for s in self.plot_widgets:
+                s_plot = self.plot_widgets[s]
+                c_name = s_plot.comp_name
+                if c_name is not None:
+                    c_status = self.get_component_status(c_name)
+                    if c_status is not None:
+                        self.components_status[c_name] = c_status[c_name]
             if self.is_hsd_link_serial():
                 self.start_plots() #In case of serial communication, the plots are started before the log!
             res = self.hsd_link.start_log(self.device_id, interface, acq_folder=acq_folder, sub_folder=sub_folder, save_files=self.save_files_flag)
@@ -830,9 +840,12 @@ class HSD_Controller(STDTDL_Controller):
         if c_enable == True:
             c_stream_id = comp_status.get("stream_id")
             if c_stream_id is not None:
-                sensor_data_file_path = os.path.join(self.hsd_link.get_acquisition_folder(),(str(comp_name) + ".dat"))
-                sensor_data_file = open(sensor_data_file_path, "wb+")
-                self.sensor_data_files.append(sensor_data_file)
+                if self.save_files_flag:
+                    sensor_data_file_path = os.path.join(".", str(comp_name) + ".dat")
+                    sensor_data_file = open(sensor_data_file_path, "wb+")
+                    self.sensor_data_files.append(sensor_data_file)
+                else:
+                    sensor_data_file = None
                 
                 c_type = comp_status.get("c_type")
                 serial_dps = comp_status.get("serial_dps")#TODO check if it is necessary
@@ -873,7 +886,7 @@ class HSD_Controller(STDTDL_Controller):
 
                 if "_ispu" in comp_name:
                     data_format = "b"
-                    dimensions = 64
+                    dimensions *= sample_size
                     sample_size = 1
                     raw_flat_data = True
                 
@@ -945,7 +958,7 @@ class HSD_Controller(STDTDL_Controller):
 
             if "_ispu" in comp_name:
                 data_format = "b"
-                dimensions = 64
+                dimensions *= sample_size
                 sample_size = 1
                 raw_flat_data = True
                 create_thread = True
@@ -978,41 +991,41 @@ class HSD_Controller(STDTDL_Controller):
             # create_thread = False
             
             if type(self.hsd_link) == HSDLink_v1:
-                    if self.save_files_flag:
-                        sensor_data_file_path = os.path.join(self.hsd_link.get_acquisition_folder(),(str(s_plot.comp_name) + ".dat"))
-                        sensor_data_file = open(sensor_data_file_path, "wb+")
-                        self.sensor_data_files.append(sensor_data_file)
-                    stopFlag = Event()
-                    self.threads_stop_flags.append(stopFlag)
+                if self.save_files_flag:
+                    sensor_data_file_path = os.path.join(self.hsd_link.get_acquisition_folder(),(str(s_plot.comp_name) + ".dat"))
+                    sensor_data_file = open(sensor_data_file_path, "wb+")
+                    self.sensor_data_files.append(sensor_data_file)
+                stopFlag = Event()
+                self.threads_stop_flags.append(stopFlag)
 
-                    dimensions = s_plot.n_curves
-                    sample_size = s_plot.sample_size
-                    spts = s_plot.spts
-                    data_format = s_plot.data_format
-                    
-                    dr = DataReader(self.add_data_to_a_plot, s_plot.comp_name, spts, dimensions, sample_size, data_format)
-                    self.data_readers.append(dr)
-                    
-                    thread = self.SensorAcquisitionThread_test_v1(stopFlag, self.hsd_link, dr, self.device_id, s_plot.s_id, s_plot.ss_id, s_plot.comp_name, sensor_data_file)
-                    thread.start()
-                    self.sensors_threads.append(thread)
+                dimensions = s_plot.n_curves
+                sample_size = s_plot.sample_size
+                spts = s_plot.spts
+                data_format = s_plot.data_format
+                
+                dr = DataReader(self.add_data_to_a_plot, s_plot.comp_name, spts, dimensions, sample_size, data_format)
+                self.data_readers.append(dr)
+                
+                thread = self.SensorAcquisitionThread_test_v1(stopFlag, self.hsd_link, dr, self.device_id, s_plot.s_id, s_plot.ss_id, s_plot.comp_name, sensor_data_file)
+                thread.start()
+                self.sensors_threads.append(thread)
             else:
                 c_name = s_plot.comp_name
-                c_status = self.get_component_status(c_name)
-                self.components_status[c_name] = c_status[c_name]
-                c_status_value = c_status[c_name]
-                
-                if self.is_hsd_link_serial():
-                    self.__start_component_plot_serial(c_status_value, c_name)
-                else:
-                    self.__start_component_plots_hsddll(c_status_value, c_name)
-        if self.is_hsd_link_serial():
-            self.sensors_threads[0].set_data_reader_params(self.data_reader_params)
+                if c_name is not None:
+                    c_status_value = self.components_status.get(c_name)
+                    if c_status_value.get("sensor_category") == DTDLUtils.SensorCategoryEnum.ISENSOR_CLASS_RANGING.value:
+                        # Ranging sensor: need to get updated status from device
+                        c_status = self.get_component_status(c_name)
+                        c_status_value = c_status[c_name]
+                    if c_status_value is not None:
+                        if self.is_hsd_link_serial():
+                            self.__start_component_plot_serial(c_status_value, c_name)
+                            self.sensors_threads[0].set_data_reader_params(self.data_reader_params)
+                        else:
+                            self.__start_component_plots_hsddll(c_status_value, c_name)
 
     def stop_log(self, interface=1):
         if self.is_logging == True:
-            if self.is_hsd_link_serial():
-                self.stop_plots() #In case of serial communication, the plots need to be stopped before stopping the log!
             self.hsd_link.stop_log(self.device_id)
             if type(self.hsd_link) == HSDLink_v1:
                 if self.save_files_flag:
@@ -1032,7 +1045,7 @@ class HSD_Controller(STDTDL_Controller):
                         shutil.copyfile(self.ispu_ucf_file_path, os.path.join(self.hsd_link.get_acquisition_folder(),ucf_filename))
                         log.info("{} File correctly saved".format(ucf_filename))
                 self.update_component_status("acquisition_info", ComponentType.OTHER)
-                self.sig_logging.emit(False, interface)
+                self.sig_logging.emit(False, 1)
                 if self.data_pipeline is not None:
                     self.data_pipeline.stop()
                 self.is_logging = False
@@ -1099,13 +1112,24 @@ class HSD_Controller(STDTDL_Controller):
 
         for sf in self.threads_stop_flags:
             sf.set()
-        
-        for t in self.sensors_threads:
-            t.join()
+
+        if not self.is_hsd_link_serial():
+            for t in self.sensors_threads:
+                t.join()
 
         if self.save_files_flag:
+            acquisition_folder = self.hsd_link.get_acquisition_folder()
             for f in self.sensor_data_files:
-                f.close()
+                try:
+                    fpath = f.name
+                    f.close()
+                    # Move the file to the acquisition folder if not already there
+                    dest_path = os.path.join(acquisition_folder, os.path.basename(fpath))
+                    if os.path.abspath(fpath) != os.path.abspath(dest_path):
+                        shutil.move(fpath, dest_path)
+                except Exception as e:
+                    log.error(f"Error moving file {f.name}: {e}")
+            self.sensor_data_files.clear()
     
     def plot_window_changed(self, plot_window_time):
         self.sig_plot_window_time_updated.emit(plot_window_time)

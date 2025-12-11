@@ -400,7 +400,6 @@ class HSDLogControlWidget(ComponentWidget):
                     self.log_start_button.setStyleSheet(STDTDL_PushButton.green)
                     self.is_waiting_to_start = False
         else:
-            self.controller.update_component_status("acquisition_info")
             if self.controller.is_automode_enabled():
                 self.stop_automode_timer()
                 self.controller.set_automode_status(AutomodeStatus.AUTOMODE_UNSTARTED)
@@ -511,7 +510,6 @@ class HSDLogControlWidget(ComponentWidget):
                         self.controller.stop_auto_log_inner(1)
                         self.log_start_button.setText("Stop Log")
                         self.log_start_button.setStyleSheet(STDTDL_PushButton.red)
-                        self.controller.update_component_status("acquisition_info")
                         self.controller.start_idle_auto_log()
                         time.sleep(y)  # Wait Y seconds before the next execution
                         self.controller.stop_idle_auto_log()
@@ -519,7 +517,6 @@ class HSDLogControlWidget(ComponentWidget):
                         self.controller.set_automode_status(AutomodeStatus.AUTOMODE_UNSTARTED)
                         # self.controller.set_automode_enabled(False)
                         self.controller.stop_log(1)
-                        self.controller.update_component_status("acquisition_info")
             else:
                 while True:
                     if stop_flag:
@@ -533,7 +530,6 @@ class HSDLogControlWidget(ComponentWidget):
                     self.controller.stop_auto_log_inner(1)
                     self.log_start_button.setText("Stop Log")
                     self.log_start_button.setStyleSheet(STDTDL_PushButton.red)
-                    self.controller.update_component_status("acquisition_info")
                     self.controller.start_idle_auto_log()
                     time.sleep(y)  # Wait Y seconds before the next execution
                     self.controller.stop_idle_auto_log()

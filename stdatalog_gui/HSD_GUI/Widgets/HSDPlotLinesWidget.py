@@ -376,11 +376,15 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
                     if len(self.fft_input_buff) >= self.FFT_N:
                         signal = self.fft_input_buff[:self.FFT_N]
                         if self.fft_window_flag == True:
+                            # Apply windowing
                             w_signal = self.fft_window * signal
-                            # Calculate the FFT
-                            fft = np.abs(np.fft.rfft(w_signal)) / self.FFT_N
+                            window_rms = np.sqrt(np.mean(self.fft_window ** 2))
+                            # Normalize FFT output by window RMS to compensate for windowing effect
+                            fft = np.abs(np.fft.rfft(w_signal)) / (self.FFT_N * window_rms) 
+                            fft[1:] *= 2  # Double only the non-DC components
                         else:
                             fft = np.abs(np.fft.rfft(signal)) / self.FFT_N
+                            fft[1:] *= 2  # Double only the non-DC components
                         self.one_t_interval_resampled[i] = np.concatenate(([fft[0]], 2*fft[1:]))
                         # Put resampled data into the y data queue
                         self.y_queue_fft[i].extend(self.one_t_interval_resampled[i])

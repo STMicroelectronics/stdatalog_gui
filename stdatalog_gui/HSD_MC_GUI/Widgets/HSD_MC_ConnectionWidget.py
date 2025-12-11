@@ -21,7 +21,7 @@ from PySide6.QtGui import QIntValidator
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtDesigner import QPyDesignerCustomWidgetCollection
 
-class ConnectionWidget(QWidget):
+class HSD_MC_ConnectionWidget(QWidget):
     def __init__(self, controller, parent=None):
         super().__init__(parent)
         self.controller = controller
@@ -34,7 +34,7 @@ class ConnectionWidget(QWidget):
         
         self.setWindowTitle("Connection")
         
-        QPyDesignerCustomWidgetCollection.registerCustomWidget(ConnectionWidget, module="ConnectionWidget")
+        QPyDesignerCustomWidgetCollection.registerCustomWidget(HSD_MC_ConnectionWidget, module="HSD_MC_ConnectionWidget")
         loader = QUiLoader()
 
         connection_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"UI","connection_widget.ui"), parent)
@@ -127,6 +127,14 @@ class ConnectionWidget(QWidget):
             self.fw_id_value.setText("")
         else:
             do_connection = True
+            motor_controller_ret_val = self.controller.get_component_status("motor_controller")
+            if motor_controller_ret_val and "PnPL_Error" not in motor_controller_ret_val:
+                motor_controller = motor_controller_ret_val['motor_controller']
+                if motor_controller is not None:
+                    if not motor_controller['mcp_configured']:
+                            self.COM_connect_button.setEnabled(False)
+                            self.controller.sig_mcp_check_connection.emit()
+                            do_connection = False
             if do_connection:
                 if self.controller.is_hsd_link_serial():
                     if self.com_speed_value.text() == "":
