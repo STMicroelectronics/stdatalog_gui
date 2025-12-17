@@ -97,7 +97,7 @@ For more complete examples, please refer to the following STDATALOG-PYSDK exampl
 - **[stdatalog_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog/GUI/stdatalog_GUI.py)**
 - **[stdatalog_MC_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/Datalog/stdatalog_MC_GUI.py)**
 - **[stdatalog_MC_CubeAI_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/AI/CubeAI/stdatalog_MC_CubeAI_GUI.py)**
-- **[stdatalog_MC_NanoEdgeAI_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/AI/CubeAI/stdatalog_MC_NanoEdgeAI_GUI.py)**
+- **[stdatalog_MC_NanoEdgeAI_GUI.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_mc/AI/NanoEdgeAI/stdatalog_MC_NanoEdgeAI_GUI.py)**
 - **[ultrasound_fft_app.py](https://github.com/STMicroelectronics/stdatalog_examples/blob/main/gui_applications/stdatalog_ultrasound_fft/ultrasound_fft_app.py)**
 
 ## License
