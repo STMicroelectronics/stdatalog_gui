@@ -32,9 +32,54 @@
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section5" checked aria-hidden="true"> <label for="collapse-section5" aria-hidden="true">v1.3.0 / 15-Nov-25</label>
+<input type="checkbox" id="collapse-section6" checked aria-hidden="true"> <label for="collapse-section6" aria-hidden="true">v1.4.0 / 15-May-26</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
+<h3 id="maintenance-release">Maintenance Release</h3>
+<ul>
+<li>Enhanced widget modules with improved documentation and code structure
+<ul>
+<li>Added comprehensive docstrings to <code>PropertyWidget</code>, <code>TelemetryWidget</code>, and <code>ToggleButton</code> classes, detailing parameters, attributes, and responsibilities.</li>
+<li>Refactored code for better readability, including consistent formatting and line wrapping.</li>
+<li>Improved hover and state handling in <code>ToggleButton</code> for better user experience.</li>
+<li>Updated <code>PropertyWidget</code> and <code>TelemetryWidget</code> to ensure consistent handling of telemetry data and UI updates.</li>
+<li>Enhanced <code>SubPropertyWidget</code> and <code>SubTelemetryWidget</code> to better manage nested properties and telemetry fields.</li>
+<li>Ensured all widgets maintain a clear separation of concerns, focusing on presentation while delegating logic to controllers.</li>
+</ul></li>
+<li>Refactored MLC and ISPU configuration handling
+<ul>
+<li>Added the support to JSON format. UCF still maintained to ensure retrocompatibility</li>
+<li>Updated signal names and file filters</li>
+<li>Refactored HSD_Controller and HSDPlotLinesWidget to support MLC ISPU configuration and output formats</li>
+</ul></li>
+<li>Added ‘PlotImageWidget’ and ‘HSDPlotImageWidget’ to manage data from camera and image sensors</li>
+<li>Fixed exception error when closing main window</li>
+<li>Refactored plotting widgets and enhance documentation
+<ul>
+<li>Updated HSDPlotPOWWidget to improve docstrings and clarify parameters.</li>
+<li>Enhanced HSDPlotTMOSWidget with detailed descriptions and improved parameter handling.</li>
+<li>Refined HSDPlotToFWidget to include comprehensive docstrings and maintainability improvements.</li>
+<li>Introduced TagToggleButton with clear documentation for tag controls.</li>
+<li>Enhanced TagsInfoWidget with detailed docstrings, improved signal handling, and better organization of tag management logic.</li>
+<li>Improved code readability and consistency across all modified files.</li>
+</ul></li>
+<li>Refactored DeviceInformation into dedicated widget subclass avoiding hardcoded unit labels</li>
+<li>Refactored Motor Control Widgets for Improved Documentation and Structure
+<ul>
+<li>Added module-level docstrings to <code>HSD_MC_ControlWidget</code>, <code>HSD_MC_FastTelemetriesPlotLinesWidget</code>, <code>HSD_MC_FastTelemetriesPlotWidget</code>, <code>HSD_MC_LogControlWidget</code>, and <code>HSD_MC_SlowTelemetriesPlotWidget</code> to enhance clarity on their purpose and functionality.</li>
+<li>Improved class docstrings to specify parameters, attributes, and methods for better understanding and maintainability.</li>
+<li>Updated method docstrings to describe their functionality, parameters, and return types where applicable.</li>
+<li>Cleaned up code formatting and removed unnecessary semicolons and comments.</li>
+<li>Enhanced signal-slot connections and widget initialization for better readability and organization.</li>
+<li>Ensured consistent use of f-strings for string formatting.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="true">v1.3.0 / 15-Nov-25</label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
 <h3 id="maintenance-release-and-product-update">Maintenance Release and Product Update</h3>
 <ul>
 <li><strong>Full support to Serial Datalog adding compatibility with STSW-SDATALOG firmware examples</strong></li>
@@ -55,7 +100,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="true">v1.2.1 / 29-Aug-25</label>
 <div>
-<h2 id="main-changes-1">Main Changes</h2>
+<h2 id="main-changes-2">Main Changes</h2>
 <h3 id="patch-release">Patch Release</h3>
 <ul>
 <li>Solved issue #1 - pull request #2: accepted proposal from <span class="citation" data-cites="YumTaha">@YumTaha</span></li>
@@ -66,8 +111,8 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" aria-hidden="true">v1.2.0 / 20-Jun-25</label>
 <div>
-<h2 id="main-changes-2">Main Changes</h2>
-<h3 id="maintenance-release">Maintenance Release</h3>
+<h2 id="main-changes-3">Main Changes</h2>
+<h3 id="maintenance-release-1">Maintenance Release</h3>
 <ul>
 <li>Added support to Python 3.13</li>
 <li>Removed dependency from matplotlib in HSD_GUI</li>
@@ -83,8 +128,8 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="true">v1.1.0 / 9-Apr-25</label>
 <div>
-<h2 id="main-changes-3">Main Changes</h2>
-<h3 id="maintenance-release-1">Maintenance Release</h3>
+<h2 id="main-changes-4">Main Changes</h2>
+<h3 id="maintenance-release-2">Maintenance Release</h3>
 <ul>
 <li><strong>Added macos support.</strong></li>
 <li>Optimized TagsInfoWidget creation function.</li>
@@ -96,7 +141,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="true">v1.0.0 / 17-Jan-25</label>
 <div>
-<h2 id="main-changes-4">Main Changes</h2>
+<h2 id="main-changes-5">Main Changes</h2>
 <h3 id="first-official-release">First official release</h3>
 </div>
 </div>

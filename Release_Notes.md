@@ -27,7 +27,50 @@ The package is part of the **[STDATALOG-PYSDK](https://github.com/STMicroelectro
 # Update History
 
 ::: {.collapse}
-<input type="checkbox" id="collapse-section5" checked aria-hidden="true">
+<input type="checkbox" id="collapse-section6" checked aria-hidden="true">
+<label for="collapse-section6" aria-hidden="true">v1.4.0 / 15-May-26</label>
+<div>
+
+
+## Main Changes
+
+### Maintenance Release
+
+- Enhanced widget modules with improved documentation and code structure
+  - Added comprehensive docstrings to `PropertyWidget`, `TelemetryWidget`, and `ToggleButton` classes, detailing parameters, attributes, and responsibilities.
+  - Refactored code for better readability, including consistent formatting and line wrapping.
+  - Improved hover and state handling in `ToggleButton` for better user experience.
+  - Updated `PropertyWidget` and `TelemetryWidget` to ensure consistent handling of telemetry data and UI updates.
+  - Enhanced `SubPropertyWidget` and `SubTelemetryWidget` to better manage nested properties and telemetry fields.
+  - Ensured all widgets maintain a clear separation of concerns, focusing on presentation while delegating logic to controllers.
+- Refactored MLC and ISPU configuration handling
+  - Added the support to JSON format. UCF still maintained to ensure retrocompatibility
+  - Updated signal names and file filters
+  - Refactored HSD_Controller and HSDPlotLinesWidget to support MLC ISPU configuration and output formats
+- Added 'PlotImageWidget' and 'HSDPlotImageWidget' to manage data from camera and image sensors
+- Fixed exception error when closing main window
+- Refactored plotting widgets and enhance documentation
+  - Updated HSDPlotPOWWidget to improve docstrings and clarify parameters.
+  - Enhanced HSDPlotTMOSWidget with detailed descriptions and improved parameter handling.
+  - Refined HSDPlotToFWidget to include comprehensive docstrings and maintainability improvements.
+  - Introduced TagToggleButton with clear documentation for tag controls.
+  - Enhanced TagsInfoWidget with detailed docstrings, improved signal handling, and better organization of tag management logic.
+  - Improved code readability and consistency across all modified files.
+- Refactored DeviceInformation into dedicated widget subclass avoiding hardcoded unit labels
+- Refactored Motor Control Widgets for Improved Documentation and Structure
+  - Added module-level docstrings to `HSD_MC_ControlWidget`, `HSD_MC_FastTelemetriesPlotLinesWidget`, `HSD_MC_FastTelemetriesPlotWidget`, `HSD_MC_LogControlWidget`, and `HSD_MC_SlowTelemetriesPlotWidget` to enhance clarity on their purpose and functionality.
+  - Improved class docstrings to specify parameters, attributes, and methods for better understanding and maintainability.
+  - Updated method docstrings to describe their functionality, parameters, and return types where applicable.
+  - Cleaned up code formatting and removed unnecessary semicolons and comments.
+  - Enhanced signal-slot connections and widget initialization for better readability and organization.
+  - Ensured consistent use of f-strings for string formatting.
+
+
+</div>
+:::
+
+::: {.collapse}
+<input type="checkbox" id="collapse-section5" aria-hidden="true">
 <label for="collapse-section5" aria-hidden="true">v1.3.0 / 15-Nov-25</label>
 <div>
 

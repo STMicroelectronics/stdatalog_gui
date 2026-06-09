@@ -50,6 +50,7 @@ stdatalog_gui/HSD_GUI/Widgets/HSDComponentWidget.py
 stdatalog_gui/HSD_GUI/Widgets/HSDLogControlWidget.py
 stdatalog_gui/HSD_GUI/Widgets/HSDMLCConfigurationWidget.py
 stdatalog_gui/HSD_GUI/Widgets/HSDPlotALSWidget.py
+stdatalog_gui/HSD_GUI/Widgets/HSDPlotImageWidget.py
 stdatalog_gui/HSD_GUI/Widgets/HSDPlotLinesTMOSWidget.py
 stdatalog_gui/HSD_GUI/Widgets/HSDPlotLinesWidget.py
 stdatalog_gui/HSD_GUI/Widgets/HSDPlotPOWWidget.py
@@ -206,6 +207,7 @@ stdatalog_gui/Widgets/Plots/LevelPlotWidget.py
 stdatalog_gui/Widgets/Plots/PlotBarFFTWidget.py
 stdatalog_gui/Widgets/Plots/PlotBarWidget.py
 stdatalog_gui/Widgets/Plots/PlotHeatmapWidget.py
+stdatalog_gui/Widgets/Plots/PlotImageWidget.py
 stdatalog_gui/Widgets/Plots/PlotLinesWavWidget.py
 stdatalog_gui/Widgets/Plots/PlotLinesWidget.py
 stdatalog_gui/Widgets/Plots/PlotWidget.py

@@ -1,4 +1,6 @@
-
+# ******************************************************************************
+#  * @file    HSDPlotLinesTMOSWidget.py
+#  * @author  SRA
 # ******************************************************************************
 # * @attention
 # *
@@ -12,29 +14,71 @@
 # *
 # ******************************************************************************
 #
+"""
+TMOS line plots for ambient, object, presence, and motion telemetry.
 
-import time
-from PySide6.QtCore import Slot, Qt
+This module defines `HSDPlotLinesTMOSWidget`, a specialization of
+`HSDPlotLinesWidget` tailored for TMOS-derived signals. It updates curve
+visibility and legend entries based on the specific TMOS plot parameters
+and emits visual markers when presence or motion events are detected.
+
+Highlights
+----------
+- Handles dynamic visibility of lines depending on compensation options.
+- Updates legend items coherently for ambient/object/presence/motion plots.
+- Adds vertical dotted markers with labels on presence/motion detection.
+"""
 
 import pyqtgraph as pg
+from PySide6.QtCore import Slot, Qt
 from PySide6.QtGui import QColor, QBrush
 
-from stdatalog_gui.STDTDL_Controller import ComponentType
-from stdatalog_gui.Utils.PlotParams import PlotPAmbientParams, PlotPMotionParams, PlotPObjectParams, PlotPPresenceParams, PlotParams
+from stdatalog_gui.Utils.PlotParams import (
+    PlotPAmbientParams,
+    PlotPMotionParams,
+    PlotPObjectParams,
+    PlotPPresenceParams,
+)
 from stdatalog_gui.HSD_GUI.Widgets.HSDPlotLinesWidget import HSDPlotLinesWidget
 
 class HSDPlotLinesTMOSWidget(HSDPlotLinesWidget):
-    def __init__(self, controller, comp_name, comp_display_name, plot_params, p_id=0, parent=None):
+    """
+    TMOS plots for ambient/object temperatures, presence, and motion.
+
+    Parameters
+    ----------
+    controller : object
+        Application controller used by the base plot widget.
+    comp_name : str
+        Component name (unique identifier for the plot source).
+    comp_display_name : str
+        Human-readable display name for the plot.
+    plot_params : PlotPAmbientParams | PlotPObjectParams | PlotPPresenceParams | PlotPMotionParams
+        TMOS-specific plot parameters controlling dimensions and visibility.
+    p_id : int, optional
+        Plot identifier used by the base class, by default 0.
+    parent : QWidget | None, optional
+        Parent widget, by default `None`.
+    """
+
+    def __init__(
+        self,
+        controller,
+        comp_name,
+        comp_display_name,
+        plot_params,
+        p_id=0,
+        parent=None,
+    ):
         super().__init__(controller, comp_name, comp_display_name, plot_params, p_id, parent)
-        
+
         self.legend.clear()
 
         self.controller.sig_tag_done.connect(self.s_tag_done)
-        
+
         self.controller.sig_tmos_presence_detected.connect(self.s_tmos_data_tag_done)
         self.controller.sig_tmos_motion_detected.connect(self.s_tmos_data_tag_done)
 
-        
         self.data_flag = False
         self.data_flag_regions = {}
         self.lines_params = []
@@ -44,10 +88,19 @@ class HSDPlotLinesTMOSWidget(HSDPlotLinesWidget):
         self.legend = self.graph_widget.addLegend()
         brush = QBrush(QColor(255, 255, 255, 15))
         self.legend.setBrush(brush)
-        
+
         self.redraw_plot(plot_params)
 
     def redraw_plot(self, plot_params):
+        """
+        Recompute line visibility and legend entries based on parameters.
+
+        Parameters
+        ----------
+        plot_params : PlotPAmbientParams | PlotPObjectParams | PlotPPresenceParams | PlotPMotionParams
+            Plot configuration controlling which TMOS lines are enabled and whether
+            compensation lines should be displayed.
+        """
         self.plot_params = plot_params
         self.lines_params = []
         if isinstance(self.plot_params, PlotPAmbientParams):
@@ -72,18 +125,17 @@ class HSDPlotLinesTMOSWidget(HSDPlotLinesWidget):
             self.lines_params.append("Tpresence")
         elif isinstance(self.plot_params, PlotPMotionParams):
             self.lines_params.append("Tmotion")
-            
         self.legend.clear()
-        
+
         if isinstance(self.plot_params, PlotPObjectParams):
             self.legend.addItem(self.graph_curves[0], self.lines_params[0])
-            if plot_params.embedded_compensation: #T
+            if plot_params.embedded_compensation:  # T
                 self.legend.addItem(self.graph_curves[1], self.lines_params[1])
-                if plot_params.software_compensation: #T
+                if plot_params.software_compensation:  # T
                     self.legend.addItem(self.graph_curves[2], self.lines_params[2])
                     self.legend.addItem(self.graph_curves[3], self.lines_params[3])
-            else: #F
-                if plot_params.software_compensation: #T
+            else:  # F
+                if plot_params.software_compensation:  # T
                     self.legend.addItem(self.graph_curves[2], self.lines_params[1])
                     self.legend.addItem(self.graph_curves[3], self.lines_params[2])
         else:
@@ -91,24 +143,43 @@ class HSDPlotLinesTMOSWidget(HSDPlotLinesWidget):
                 self.legend.addItem(self.graph_curves[i], lp)
 
     @Slot()
-    def s_tmos_data_tag_done(self, status, tag_label:str, comp_name:str):
+    def s_tmos_data_tag_done(self, status, tag_label: str, comp_name: str):
+        """
+        Add presence/motion start/end markers when events are detected.
+
+        Parameters
+        ----------
+        status : bool
+            True for start of event, False for end of event.
+        tag_label : str
+            One of: "Presence", "Presence (SW comp)", "Motion", "Motion (SW comp)".
+        comp_name : str
+            Component name associated with the event; must match this widget.
+        """
         if comp_name == self.comp_name:
-            if isinstance(self.plot_params, PlotPPresenceParams) and tag_label == "Presence" or \
-                isinstance(self.plot_params, PlotPPresenceParams) and tag_label == "Presence (SW comp)" or \
-                isinstance(self.plot_params, PlotPMotionParams) and tag_label == "Motion" or \
-                isinstance(self.plot_params, PlotPMotionParams) and tag_label == "Motion (SW comp)":
-                if tag_label == "Presence" or tag_label == "Motion":
-                    colors = ['#00FF00', '#FF0000']
+            if (
+                isinstance(self.plot_params, PlotPPresenceParams)
+                and tag_label in ("Presence", "Presence (SW comp)")
+            ) or (
+                isinstance(self.plot_params, PlotPMotionParams)
+                and tag_label in ("Motion", "Motion (SW comp)")
+            ):
+                if tag_label in ("Presence", "Motion"):
+                    colors = ["#00FF00", "#FF0000"]
                     texts = ["Start", "End"]
                 else:
-                    colors = ['#00FFFF', '#FF8000']
+                    colors = ["#00FFFF", "#FF8000"]
                     texts = ["Start (SW comp)", "End (SW comp)"]
-                
                 if status:
                     if not tag_label in self.active_tags or self.active_tags[tag_label] == False:
                         self.active_tags[tag_label] = True
-                        pen=pg.mkPen(color=colors[0], width=3, style=Qt.PenStyle.DotLine)
-                        tag_line = pg.InfiniteLine(pos = self.x_data[-1], angle=90, movable=False, pen=pen)
+                        pen = pg.mkPen(color=colors[0], width=3, style=Qt.PenStyle.DotLine)
+                        tag_line = pg.InfiniteLine(
+                            pos=self.x_data[-1],
+                            angle=90,
+                            movable=False,
+                            pen=pen,
+                        )
                         label = pg.TextItem(text=texts[0].format(tag_label), angle=-90)
                         label.setAnchor((1, 0))  # Position label above the line
                         label.setParentItem(tag_line)
@@ -117,8 +188,13 @@ class HSDPlotLinesTMOSWidget(HSDPlotLinesWidget):
                 else:
                     if not tag_label in self.active_tags or self.active_tags[tag_label] == True:
                         self.active_tags[tag_label] = False
-                        pen=pg.mkPen(color=colors[1], width=3, style=Qt.PenStyle.DotLine)
-                        tag_line = pg.InfiniteLine(pos = self.x_data[-1], angle=90, movable=False, pen=pen)
+                        pen = pg.mkPen(color=colors[1], width=3, style=Qt.PenStyle.DotLine)
+                        tag_line = pg.InfiniteLine(
+                            pos=self.x_data[-1],
+                            angle=90,
+                            movable=False,
+                            pen=pen,
+                        )
                         label = pg.TextItem(text=texts[1], angle=-90)
                         label.setAnchor((1, 0))  # Position label above the line
                         label.setParentItem(tag_line)
@@ -126,25 +202,49 @@ class HSDPlotLinesTMOSWidget(HSDPlotLinesWidget):
                         self.tag_lines.append(tag_line)
 
     def add_data(self, data):
+        """
+        Forward new samples and emit presence/motion events based on flags.
+
+        Parameters
+        ----------
+        data : Sequence
+            Data arrays as produced by the TMOS pipeline. For presence/motion plots,
+            boolean flags are expected at indices 1 and optionally 2 (SW comp).
+        """
         super().add_data(data)
         if isinstance(self.plot_params, PlotPPresenceParams):
             if bool(data[1].any()) == True:
-                self.controller.sig_tmos_presence_detected.emit(True, "Presence", self.comp_name)
+                self.controller.sig_tmos_presence_detected.emit(
+                    True, "Presence", self.comp_name
+                )
             else:
-                self.controller.sig_tmos_presence_detected.emit(False, "Presence", self.comp_name)
+                self.controller.sig_tmos_presence_detected.emit(
+                    False, "Presence", self.comp_name
+                )
             if self.plot_params.software_compensation:
                 if bool(data[2].any()) == True:
-                    self.controller.sig_tmos_presence_detected.emit(True, "Presence (SW comp)", self.comp_name)
+                    self.controller.sig_tmos_presence_detected.emit(
+                        True, "Presence (SW comp)", self.comp_name
+                    )
                 else:
-                    self.controller.sig_tmos_presence_detected.emit(False, "Presence (SW comp)", self.comp_name)
+                    self.controller.sig_tmos_presence_detected.emit(
+                        False, "Presence (SW comp)", self.comp_name
+                    )
         elif isinstance(self.plot_params, PlotPMotionParams):
             if bool(data[1].any()) == True:
-                self.controller.sig_tmos_motion_detected.emit(True, "Motion", self.comp_name)
+                self.controller.sig_tmos_motion_detected.emit(
+                    True, "Motion", self.comp_name
+                )
             else:
-                self.controller.sig_tmos_motion_detected.emit(False, "Motion", self.comp_name)
+                self.controller.sig_tmos_motion_detected.emit(
+                    False, "Motion", self.comp_name
+                )
             if self.plot_params.software_compensation:
                 if bool(data[2].any()) == True:
-                    self.controller.sig_tmos_motion_detected.emit(True, "Motion (SW comp)", self.comp_name)
+                    self.controller.sig_tmos_motion_detected.emit(
+                        True, "Motion (SW comp)", self.comp_name
+                    )
                 else:
-                    self.controller.sig_tmos_motion_detected.emit(False, "Motion (SW comp)", self.comp_name)
-    
+                    self.controller.sig_tmos_motion_detected.emit(
+                        False, "Motion (SW comp)", self.comp_name
+                    )

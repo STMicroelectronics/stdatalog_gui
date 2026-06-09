@@ -1,9 +1,12 @@
-stdatalog_pnpl==1.3.0
-stdatalog_core==1.3.0
-stdatalog_dtk==1.3.0
+stdatalog_pnpl==1.4.0
+stdatalog_core==1.4.0
+stdatalog_dtk==1.4.0
 numpy==2.3.4
 pyqtgraph==0.13.7
 setuptools<81
+pillow==12.2.0
+
+[:platform_system != "Linux"]
 pyaudio==0.2.14
 
 [:platform_system == "Darwin" and platform_machine == "arm64"]

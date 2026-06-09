@@ -1,4 +1,6 @@
-
+# ******************************************************************************
+#  * @file    HSDLogControlWidget.py
+#  * @author  SRA
 # ******************************************************************************
 # * @attention
 # *
@@ -12,6 +14,22 @@
 # *
 # ******************************************************************************
 #
+"""
+Logging control widget for starting/stopping acquisition and offline plotting.
+
+This module defines `HSDLogControlWidget`, a GUI component that coordinates logging
+for HSD devices. It wires UI controls for starting/stopping logs (including automode),
+manages SD card status display, allows saving/loading configuration, and launches
+offline plots after acquisitions complete. It also manages per-session plotting
+parameters, time windows, and optional spectrum/debug/sub-plot flags.
+
+Highlights
+----------
+- Start/stop logging with support for USB, Serial, and automode scheduling.
+- Save/load device configuration to PC and optionally SD card.
+- Display SD card mount status and enable/disable controls accordingly.
+- Trigger offline plotting with configurable time ranges and flags.
+"""
 
 from datetime import datetime
 import os
@@ -23,7 +41,18 @@ from stdatalog_gui.UI.styles import STDTDL_Label, STDTDL_PushButton
 from stdatalog_gui.Widgets.LoadingWindow import StaticLoadingWindow
 
 from PySide6.QtCore import Slot, Qt
-from PySide6.QtWidgets import QFrame, QSpinBox, QComboBox, QPushButton, QCheckBox, QFileDialog, QGroupBox, QRadioButton, QLabel, QLineEdit
+from PySide6.QtWidgets import (
+    QFrame,
+    QSpinBox,
+    QComboBox,
+    QPushButton,
+    QCheckBox,
+    QFileDialog,
+    QGroupBox,
+    QRadioButton,
+    QLabel,
+    QLineEdit,
+)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtDesigner import QPyDesignerCustomWidgetCollection
 
@@ -35,14 +64,52 @@ import stdatalog_core.HSD_utils.logger as logger
 log = logger.get_logger(__name__)
 
 class HSDLogControlWidget(ComponentWidget):
-    
-    def __init__(self, controller, comp_contents, comp_name="log_controller", comp_display_name = "Log Controller" ,comp_sem_type="other", c_id=0, parent=None):
-        super().__init__(controller, comp_name, comp_display_name, comp_sem_type, comp_contents, c_id, parent)
-        
+
+    """
+    Controller widget for device logging and related utilities.
+
+    Parameters
+    ----------
+    controller : object
+        Application controller exposing logging, plotting, and config APIs.
+    comp_contents : list
+        Component content descriptors used to configure UI where needed.
+    comp_name : str, optional
+        Component identifier, by default "log_controller".
+    comp_display_name : str, optional
+        Display name used in the window title, by default "Log Controller".
+    comp_sem_type : str, optional
+        Semantic type passed to the base `ComponentWidget`, by default "other".
+    c_id : int, optional
+        Component id for the base widget, by default 0.
+    parent : QWidget | None, optional
+        Parent widget.
+    """
+
+    def __init__(
+        self,
+        controller,
+        comp_contents,
+        comp_name="log_controller",
+        comp_display_name="Log Controller",
+        comp_sem_type="other",
+        c_id=0,
+        parent=None,
+    ):
+        super().__init__(
+            controller,
+            comp_name,
+            comp_display_name,
+            comp_sem_type,
+            comp_contents,
+            c_id,
+            parent,
+        )
+
         self.controller.sig_autologging_is_stopping.connect(self.s_is_autologging_stopping)
         self.controller.sig_offline_plots_completed.connect(self.s_offline_plots_completed)
         self.controller.sig_lock_start_button.connect(self.s_lock_start_button)
-        
+
         self.app = self.controller.qt_app
         self.is_waiting_to_start = False
         self.is_logging = False
@@ -58,65 +125,90 @@ class HSDLogControlWidget(ComponentWidget):
 
         self.setWindowTitle(comp_display_name)
 
-        QPyDesignerCustomWidgetCollection.registerCustomWidget(HSDLogControlWidget, module="LogControlWidget")
+        QPyDesignerCustomWidgetCollection.registerCustomWidget(
+            HSDLogControlWidget, module="LogControlWidget"
+        )
         loader = QUiLoader()
-        log_control_widget = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"HSD_GUI","UI","log_control_widget.ui"))
-        frame_contents = log_control_widget.frame_log_control.findChild(QFrame,"frame_contents")
+        log_control_widget = loader.load(
+            os.path.join(
+                os.path.dirname(stdatalog_gui.__file__),
+                "HSD_GUI",
+                "UI",
+                "log_control_widget.ui",
+            )
+        )
+        frame_contents = log_control_widget.frame_log_control.findChild(
+            QFrame, "frame_contents"
+        )
         # Plots Time Window
-        self.time_spinbox = frame_contents.findChild(QSpinBox,"spinBox_time_window")
+        self.time_spinbox = frame_contents.findChild(QSpinBox, "spinBox_time_window")
         self.time_spinbox.valueChanged.connect(self.plot_window_time_change)
         self.time_spinbox.setValue(30)
         # Start/Stop Log PushButton
-        self.log_start_button = frame_contents.findChild(QPushButton,"start_button")
+        self.log_start_button = frame_contents.findChild(QPushButton, "start_button")
         self.log_start_button.clicked.connect(self.clicked_start_log_button)
 
-        self.config_errors_label = frame_contents.findChild(QLabel,"config_errors_label")
+        self.config_errors_label = frame_contents.findChild(QLabel, "config_errors_label")
         self.config_errors_label.setVisible(False)
-        
-        #TODO generic logging interfaces management (update SD card status message only if SD card interface is supported)
-        # # SD Mounted Label
-        self.frame_sub_log_info = log_control_widget.frame_log_control.findChild(QFrame,"frame_sub_log_info")
-        self.sd_mounted_label.setContentsMargins(6,0,0,0)
+
+        # SD Mounted Label
+        self.frame_sub_log_info = log_control_widget.frame_log_control.findChild(
+            QFrame, "frame_sub_log_info"
+        )
+        self.sd_mounted_label.setContentsMargins(6, 0, 0, 0)
         self.frame_sub_log_info.layout().addWidget(self.sd_mounted_label)
         self.frame_sub_log_info.setEnabled(False)
         self.frame_sub_log_info.setVisible(False)
-        
-        # # Available interfaces Refresh button        
+
+        # Available interfaces Refresh button
         self.sd_mounted = self.controller.get_sd_mounted_status()
-        # # self.sd_mounted.setFixedHeight(0)
-        # # self.sd_mounted_label.setText("SD Mounted") if self.sd_mounted else self.sd_mounted_label.setText("SD NOT Mounted")
-        # # self.__update_sd_status_label()
         self.update_sd_status_label()
-        
-        self.refresh_sd_button = frame_contents.findChild(QPushButton,"refresh_sd_button")
+
+        self.refresh_sd_button = frame_contents.findChild(QPushButton, "refresh_sd_button")
         self.refresh_sd_button.clicked.connect(self.clicked_refresh_button)
         self.refresh_sd_button.setEnabled(False)
         self.refresh_sd_button.setVisible(False)
-        #TODO end todo
 
-        self.save_files_checkbox = frame_contents.findChild(QCheckBox,"save_files_checkbox")
+        self.save_files_checkbox = frame_contents.findChild(QCheckBox, "save_files_checkbox")
         self.save_files_checkbox.stateChanged.connect(self.checkBox_save_files_checked)
 
         # Log Interfaces ComboBox
         # self.interface_combobox = frame_contents.findChild(QComboBox,"interface_combobox")
-        # ==============================================================================================================
-        #NOTE uncomment the following instructions when FW support start logging on different interfaces (e.g. SD card)
-        # self.log_interfaces_enums = [c for c in comp_contents if c.name == "start_log"][0].request.schema.enum_values
+        # =====================================================================================
+        # NOTE: Uncomment when FW supports starting logs on multiple interfaces (e.g., SD card).
+        # self.log_interfaces_enums = (
+        #     [c for c in comp_contents if c.name == "start_log"][0]
+        #     .request.schema.enum_values
+        # )
         # for v in self.log_interfaces_enums:
         #     if v.name == "sd_card":
         #         if self.sd_mounted:
-        #             self.interface_combobox.addItem(v.display_name if isinstance(v.display_name,str) else v.display_name.en)
+        #             self.interface_combobox.addItem(
+        #                 v.display_name
+        #                 if isinstance(v.display_name, str)
+        #                 else v.display_name.en
+        #             )
         #     else:
-        #         self.interface_combobox.addItem(v.display_name if isinstance(v.display_name,str) else v.display_name.en)
-        # self.interface_combobox.setCurrentIndex(self.interface_combobox.count() - 1)
+        #         self.interface_combobox.addItem(
+        #             v.display_name
+        #             if isinstance(v.display_name, str)
+        #             else v.display_name.en
+        #         )
+        # self.interface_combobox.setCurrentIndex(
+        #     self.interface_combobox.count() - 1
+        # )
         # self.interface_combobox.addItem("USB")
-        # ==============================================================================================================
+        # =====================================================================================
 
         # Save Config PushButton
-        self.save_config_button = log_control_widget.frame_log_control.findChild(QPushButton,"save_conf_button")
+        self.save_config_button = log_control_widget.frame_log_control.findChild(
+            QPushButton, "save_conf_button"
+        )
         self.save_config_button.clicked.connect(self.clicked_save_config_button)
         # Load Config PushButton
-        self.load_config_button = log_control_widget.frame_log_control.findChild(QPushButton,"load_conf_button")
+        self.load_config_button = log_control_widget.frame_log_control.findChild(
+            QPushButton, "load_conf_button"
+        )
         self.load_config_button.clicked.connect(self.clicked_load_config_button)
         # Offline plot settings GroupBox
         self.groupBox_offline_plot = frame_contents.findChild(QGroupBox, "groupBox_offline_plot")
@@ -130,78 +222,91 @@ class HSDLogControlWidget(ComponentWidget):
         # Online plot settings GroupBox
         self.checkBox_online = frame_contents.findChild(QCheckBox, "checkBox_online")
         self.checkBox_online.stateChanged.connect(self.checkBox_online_checked)
-        
+
         self.acq_folder_button = frame_contents.findChild(QPushButton, "acq_folder_button")
         self.acq_folder_button.clicked.connect(self.browse_acq_folder_clicked)
         self.acq_folder_lineEdit = frame_contents.findChild(QLineEdit, "acq_folder_lineEdit")
         self.acq_folder = os.getcwd()
         self.acq_folder_lineEdit.setText(self.acq_folder)
-        self.subfolder_checkbox = frame_contents.findChild(QCheckBox,"subfolder_checkbox")
+        self.subfolder_checkbox = frame_contents.findChild(QCheckBox, "subfolder_checkbox")
         self.subfolder_checkbox.stateChanged.connect(self.checkBox_subfolder_checked)
         self.sub_folder = True
         self.subfolder_checkbox.setChecked(True)
 
-        self.ds_component_names_combo = frame_contents.findChild(QComboBox,"sensor_names_combo")
+        self.ds_component_names_combo = frame_contents.findChild(QComboBox, "sensor_names_combo")
 
-        self.spectrum_radio = frame_contents.findChild(QRadioButton,"spectrum_radio")
+        self.spectrum_radio = frame_contents.findChild(QRadioButton, "spectrum_radio")
         self.spectrum_flag = False
         self.spectrum_radio.toggled.connect(self.toggled_spectrum_flag)
         self.spectrum_radio.setEnabled(False)
         self.spectrum_radio.setVisible(False)
-        
-        self.debug_radio = frame_contents.findChild(QRadioButton,"debug_radio")
+
+        self.debug_radio = frame_contents.findChild(QRadioButton, "debug_radio")
         self.debug_flag = False
         self.debug_radio.toggled.connect(self.toggled_debug_flag)
         self.debug_radio.setEnabled(False)
         self.debug_radio.setVisible(False)
-        
-        self.st_spinbox = frame_contents.findChild(QSpinBox,"st_spinbox")
+
+        self.st_spinbox = frame_contents.findChild(QSpinBox, "st_spinbox")
         self.s_start = 0
         self.st_spinbox.setValue(self.s_start)
-        self.et_spinbox = frame_contents.findChild(QSpinBox,"et_spinbox")
+        self.et_spinbox = frame_contents.findChild(QSpinBox, "et_spinbox")
         self.s_end = -1
         self.et_spinbox.setValue(self.s_end)
-        
-        self.tags_label_combo = frame_contents.findChild(QComboBox,"tags_label_combo")
+
+        self.tags_label_combo = frame_contents.findChild(QComboBox, "tags_label_combo")
         self.tags_label_combo.setEnabled(False)
         self.tags_label_combo.setVisible(False)
-        
-        self.sub_plots_radio = frame_contents.findChild(QRadioButton,"sub_plots_radio")
+
+        self.sub_plots_radio = frame_contents.findChild(QRadioButton, "sub_plots_radio")
         self.sub_plots_flag = False
         self.sub_plots_radio.toggled.connect(self.toggled_sub_plots_flag)
         self.sub_plots_radio.setEnabled(False)
         self.sub_plots_radio.setVisible(False)
-        
-        self.raw_data_radio = frame_contents.findChild(QRadioButton,"raw_data_radio")
+
+        self.raw_data_radio = frame_contents.findChild(QRadioButton, "raw_data_radio")
         self.raw_data_flag = False
         self.raw_data_radio.toggled.connect(self.toggled_raw_data_flag)
-        self.raw_data_radio.setEnabled(False)        
+        self.raw_data_radio.setEnabled(False)
         self.raw_data_radio.setVisible(False)
-        
-        self.offline_plot_button = frame_contents.findChild(QPushButton,"offline_plot_button")
+
+        self.offline_plot_button = frame_contents.findChild(QPushButton, "offline_plot_button")
         self.offline_plot_button.clicked.connect(self.clicked_offline_plot_button)
         # Save Config Dialog
         loader = QUiLoader()
-        self.save_config_dialog = loader.load(os.path.join(os.path.dirname(stdatalog_gui.__file__),"HSD_GUI","UI","save_config_dialog.ui"), self)
-        
+        self.save_config_dialog = loader.load(
+            os.path.join(
+                os.path.dirname(stdatalog_gui.__file__), "HSD_GUI", "UI", "save_config_dialog.ui"
+            ),
+            self,
+        )
+
         self.save_config_dialog.setFixedSize(360,200)
         self.save_config_dialog.setWindowTitle("Save Configuration")
-        self.pc_checkbox = self.save_config_dialog.dialog_frame.findChild(QCheckBox,"pc_checkbox")
-        self.sd_checkbox = self.save_config_dialog.dialog_frame.findChild(QCheckBox,"sd_checkbox")
+        self.pc_checkbox = self.save_config_dialog.dialog_frame.findChild(QCheckBox, "pc_checkbox")
+        self.sd_checkbox = self.save_config_dialog.dialog_frame.findChild(QCheckBox, "sd_checkbox")
         # Save PushButton
-        self.save_button = self.save_config_dialog.dialog_frame.findChild(QPushButton,"save_button")
+        self.save_button = self.save_config_dialog.dialog_frame.findChild(
+            QPushButton, "save_button"
+        )
         self.save_button.clicked.connect(self.clicked_save_button)
         # Cancel PushButton
-        self.cancel_button = self.save_config_dialog.dialog_frame.findChild(QPushButton,"cancel_button")
+        self.cancel_button = self.save_config_dialog.dialog_frame.findChild(
+            QPushButton, "cancel_button"
+        )
         self.cancel_button.clicked.connect(self.clicked_cancel_button)
-        
+
         self.layout().setContentsMargins(0,0,0,0)
         self.contents_widget.layout().setContentsMargins(9,0,9,0)
         self.contents_widget.layout().addWidget(log_control_widget.frame_log_control)
         self.contents_widget.setVisible(True)
-    
+
     def update_sd_status_label(self):
-        self.sd_mounted = self.controller.get_sd_mounted_status()#hsd_link.get_boolean_property(0,"log_controller","sd_mounted")
+        """
+        Refresh the SD card mount label and styling based on controller status.
+        """
+        # hsd_link.get_boolean_property(0,"log_controller","sd_mounted")
+        self.sd_mounted = self.controller.get_sd_mounted_status()
         if self.sd_mounted:
             self.sd_mounted_label.setText("SD Mounted")
             self.sd_mounted_label.setStyleSheet(STDTDL_Label.valid)
@@ -210,77 +315,157 @@ class HSDLogControlWidget(ComponentWidget):
             self.sd_mounted_label.setStyleSheet(STDTDL_Label.invalid)
     @Slot()
     def clicked_refresh_button(self):
-        # ==============================================================================================================
-        #NOTE uncomment the following instructions when FW support start logging on different interfaces (e.g. SD card)
+        """
+        Update SD status and, when enabled, refresh the interfaces combo box.
+
+        Notes
+        -----
+        The combo box refresh code is currently commented out pending firmware
+        support for multiple logging interfaces.
+        """
+        # =====================================================================================
+        # NOTE: Uncomment when FW supports starting logs on multiple interfaces (e.g., SD card).
         # self.interface_combobox.clear()
         # for v in self.log_interfaces_enums:
         #     if v.name == "sd_card":
         #         if self.sd_mounted:
-        #             self.interface_combobox.addItem(v.display_name if isinstance(v.display_name,str) else v.display_name.en)
+        #             self.interface_combobox.addItem(
+        #                 v.display_name
+        #                 if isinstance(v.display_name, str)
+        #                 else v.display_name.en
+        #             )
         #             log.info("Log interfaces Combobox refreshed, SD Card detected")
         #         else:
         #             log.info("Log interfaces Combobox refreshed, No SD Card detected")
         #     else:
-        #         self.interface_combobox.addItem(v.display_name if isinstance(v.display_name,str) else v.display_name.en)
-        # self.interface_combobox.setCurrentIndex(self.interface_combobox.count() - 1)
-        # ==============================================================================================================
-        
+        #         self.interface_combobox.addItem(
+        #             v.display_name
+        #             if isinstance(v.display_name, str)
+        #             else v.display_name.en
+        #         )
+        # self.interface_combobox.setCurrentIndex(
+        #     self.interface_combobox.count() - 1
+        # )
+        # =====================================================================================
+
         self.update_sd_status_label()
-        # self.sd_mounted = self.controller.hsd_link.get_boolean_property(0,"log_controller","sd_mounted")
-        # if self.sd_mounted:
-        #     self.sd_mounted_label.setText("SD Mounted")
-        #     self.sd_mounted_label.setStyleSheet("color: #DAF0E2;")
-        # else:
-        #     self.sd_mounted_label.setText("SD NOT Mounted")
-        #     self.sd_mounted_label.setStyleSheet("color: #FFC7E6;")
-        # self.sd_mounted_label.setText("SD Mounted") if self.sd_mounted else self.sd_mounted_label.setText("SD NOT Mounted")
-    
+
     @Slot()
     def clicked_save_config_button(self):
+        """
+        Open the save-config dialog and show SD option only if SD is mounted.
+        """
         if self.sd_mounted:
             self.sd_checkbox.setVisible(True)
         else:
             self.sd_checkbox.setVisible(False)
         self.save_config_dialog.exec_()
-        
+
     @Slot()
     def clicked_save_button(self):
+        """
+        Persist the current device configuration to PC and/or SD card.
+        """
         self.controller.save_config(self.pc_checkbox.isChecked(), self.sd_checkbox.isChecked())
         self.save_config_dialog.close()
-    
+
     @Slot()
     def clicked_cancel_button(self):
+        """
+        Close the save-config dialog without saving.
+        """
         self.save_config_dialog.close()
-        
+
     @Slot()
     def toggled_spectrum_flag(self, status):
+        """
+        Update the spectrum flag used for offline plotting configuration.
+
+        Parameters
+        ----------
+        status : bool
+            New state for the spectrum flag.
+        """
         self.spectrum_flag = status
 
     @Slot()
     def toggled_debug_flag(self, status):
+        """
+        Update the debug flag used for offline plotting configuration.
+
+        Parameters
+        ----------
+        status : bool
+            New state for the debug flag.
+        """
         self.debug_flag = status
-        
+
     @Slot()
     def toggled_sub_plots_flag(self, status):
+        """
+        Update the sub-plots flag used for offline plotting configuration.
+
+        Parameters
+        ----------
+        status : bool
+            New state for the sub-plots flag.
+        """
         self.sub_plots_flag = status
-        
+
     @Slot()
     def toggled_raw_data_flag(self, status):
+        """
+        Update the raw-data flag used for offline plotting configuration.
+
+        Parameters
+        ----------
+        status : bool
+            New state for the raw-data flag.
+        """
         self.raw_data_flag = status
-        
+
     @Slot()
     def clicked_offline_plot_button(self):
-        self.loading_window = StaticLoadingWindow("Plot ongoing...", "Acquired data extraction. Please wait...", self.parent_widget)
+        """
+        Launch offline plotting for the selected components and time range.
+        """
+        self.loading_window = StaticLoadingWindow(
+            "Plot ongoing...",
+            "Acquired data extraction. Please wait...",
+            self.parent_widget,
+        )
         self.app.processEvents()
-        
+
         cb_sensor_value = self.ds_component_names_combo.currentText()
         tag_label = self.tags_label_combo.currentText()
         self.s_start = self.st_spinbox.value()
         self.s_end = self.et_spinbox.value()
-        self.controller.do_offline_plots(cb_sensor_value, tag_label, self.s_start, self.s_end, self.active_sensor_list, self.active_algorithm_list, self.debug_flag, self.sub_plots_flag, self.raw_data_flag, self.active_actuator_list, self.spectrum_flag)
-    
+        self.controller.do_offline_plots(
+            cb_sensor_value,
+            tag_label,
+            self.s_start,
+            self.s_end,
+            self.active_sensor_list,
+            self.active_algorithm_list,
+            self.debug_flag,
+            self.sub_plots_flag,
+            self.raw_data_flag,
+            self.active_actuator_list,
+            self.spectrum_flag,
+        )
+
     @Slot()
     def s_lock_start_button(self, status, msg):
+        """
+        Lock/unlock the start button with styling and error messaging.
+
+        Parameters
+        ----------
+        status : bool
+            True to lock the button and display an error message.
+        msg : str
+            The error message to display when locked.
+        """
         if status != self.curr_start_log_button_statue:
             if status:
                 self.log_start_button.setStyleSheet(STDTDL_PushButton.invalid)
@@ -293,20 +478,37 @@ class HSDLogControlWidget(ComponentWidget):
 
     @Slot()
     def s_offline_plots_completed(self):
+        """
+        Close the loading window when offline plotting finishes.
+        """
         self.loading_window.loadingDone()
 
     @Slot()
     def s_is_autologging_stopping(self, status):
+        """
+        Enable/disable the start button while autologging is stopping.
+        """
         self.log_start_button.setEnabled(not status)
-        
+
     @Slot()
     def clicked_load_config_button(self):
-        fname = QFileDialog.getOpenFileName(None, "Load a Device Configuration file", "device_config", "JSON (*.json)")
+        """
+        Prompt the user to load a device configuration from a JSON file.
+        """
+        fname = QFileDialog.getOpenFileName(
+            None,
+            "Load a Device Configuration file",
+            "device_config",
+            "JSON (*.json)",
+        )
         if fname[0]:  # Check if a file was actually selected (not cancelled)
             self.controller.load_config(fname[0])
 
     @Slot()
     def checkBox_offline_checked(self, state):
+        """
+        Toggle offline plotting settings visibility based on checkbox state.
+        """
         if state == Qt.Unchecked.value:
             self.groupBox_offline_plot.setVisible(False)
         elif state == Qt.Checked.value:
@@ -314,13 +516,19 @@ class HSDLogControlWidget(ComponentWidget):
 
     @Slot()
     def checkBox_online_checked(self, state):
+        """
+        Toggle online plotting settings visibility based on checkbox state.
+        """
         if state == Qt.Unchecked.value:
             self.groupBox_online_plot.setVisible(False)
         elif state == Qt.Checked.value:
             self.groupBox_online_plot.setVisible(True)
-    
+
     @Slot()
     def browse_acq_folder_clicked(self):
+        """
+        Open a folder picker and update the acquisition folder path.
+        """
         options = QFileDialog.Options()
         options |= QFileDialog.Option.ShowDirsOnly
         folder = QFileDialog.getExistingDirectory(self, "Select Folder", options=options)
@@ -330,6 +538,9 @@ class HSDLogControlWidget(ComponentWidget):
 
     @Slot()
     def checkBox_save_files_checked(self, state):
+        """
+        Enable or disable saving of files to disk for logging sessions.
+        """
         if state == Qt.Unchecked.value:
             self.controller.set_save_files_flag(False)
         elif state == Qt.Checked.value:
@@ -337,22 +548,33 @@ class HSDLogControlWidget(ComponentWidget):
 
     @Slot()
     def checkBox_subfolder_checked(self, state):
+        """
+        Choose whether to create a sub-folder inside the acquisition folder.
+        """
         if state == Qt.Unchecked.value:
             self.sub_folder = False
         elif state == Qt.Checked.value:
             self.sub_folder = True
 
-            
     @Slot()
     def clicked_start_log_button(self):
-        # ==============================================================================================================
-        #NOTE uncomment the following instructions when FW support start logging on different interfaces (e.g. SD card)
+        """
+        Start or stop logging, handling automode and link-specific behavior.
+
+        Notes
+        -----
+        - Interface 1 is USB; interface 3 is Serial. SD card interfaces are
+            currently gated by firmware and commented code.
+        - When automode is enabled, start/stop logic is delegated to timers.
+        """
+        # =====================================================================================
+        # NOTE: Uncomment when FW supports starting logs on multiple interfaces (e.g., SD card).
         # if self.sd_mounted == False:
         #     interface = 1
         # else:
         #     interface = self.interface_combobox.currentIndex()
         interface = 1
-        # ==============================================================================================================
+        # =====================================================================================
         if self.controller.is_hsd_link_serial():
             interface = 3
         if not self.is_logging:
@@ -407,14 +629,24 @@ class HSDLogControlWidget(ComponentWidget):
             self.controller.stop_log(interface)
 
     @Slot(bool)
-    def s_is_logging(self, status:bool, interface:int):        
+    def s_is_logging(self, status:bool, interface:int):
+        """
+        Update UI and plot handling in response to logging state changes.
+
+        Parameters
+        ----------
+        status : bool
+            True if logging has started, False if it has stopped.
+        interface : int
+            Active logging interface (1 for USB, 3 for Serial).
+        """
         if status:
             self.log_start_button.setText("Stop Log")
             self.log_start_button.setStyleSheet(STDTDL_PushButton.red)
             self.is_logging = True
             if interface == 1:
                 self.controller.start_plots()
-            
+
             self.groupBox_offline_plot.setEnabled(False)
             self.offline_plot_button.setEnabled(False)
             self.st_spinbox.setEnabled(False)
@@ -424,7 +656,7 @@ class HSDLogControlWidget(ComponentWidget):
             self.is_logging = False
             if interface == 1:
                 self.controller.stop_plots()
-            
+
             automode_status = self.controller.get_automode_status()
             if automode_status == AutomodeStatus.AUTOMODE_UNSTARTED:
                 self.log_start_button.setText("Start Log")
@@ -437,10 +669,10 @@ class HSDLogControlWidget(ComponentWidget):
                 self.et_spinbox.setEnabled(True)
 
                 acquisition_folder = self.controller.get_acquisition_folder()
-                
+
                 hsd_factory = HSDatalog()
                 self.hsd= hsd_factory.create_hsd(acquisition_folder)
-                
+
                 self.active_sensor_list = self.hsd.get_sensor_list(only_active=True)
                 self.active_algorithm_list = self.hsd.get_algorithm_list(only_active=True)
                 self.active_actuator_list = self.hsd.get_actuator_list(only_active=True)
@@ -453,7 +685,7 @@ class HSDLogControlWidget(ComponentWidget):
                 for act in self.active_actuator_list:
                     self.ds_component_names_combo.addItem(list(act.keys())[0])
                 self.ds_component_names_combo.setCurrentIndex(0)
-                
+
                 tags_label_list = self.hsd.get_acquisition_label_classes()
                 self.tags_label_combo.clear()
                 self.tags_label_combo.addItem("None")
@@ -461,38 +693,73 @@ class HSDLogControlWidget(ComponentWidget):
                     for t in tags_label_list:
                         self.tags_label_combo.addItem(t)
                     self.tags_label_combo.setCurrentIndex(0)
-                
+
                 acq_info_model = self.hsd.get_acquisition_info()
                 start_time = acq_info_model["start_time"]
-                end_time = acq_info_model["end_time"]            
+                end_time = acq_info_model["end_time"]
                 st_date = datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%S.%fZ")
                 et_date = datetime.strptime(end_time, "%Y-%m-%dT%H:%M:%S.%fZ")
                 acq_duration_in_sec = (et_date - st_date).total_seconds()
                 self.et_spinbox.setMaximum(math.ceil(acq_duration_in_sec))
-            
-    
+
     @Slot()
     def plot_window_time_change(self):
+        """
+        Notify the controller that the plot time window value has changed.
+        """
         self.controller.plot_window_changed(self.time_spinbox.value())
 
     def saveSettings(self, settings):
+        """
+        Persist the time window value into the provided settings object.
+
+        Parameters
+        ----------
+        settings : QSettings
+            Settings store used by the application to persist UI state.
+        """
         settings.setValue("logcontrolwidget/timewindow", self.time_spinbox.value())
 
     def restoreSettings(self, settings):
+        """
+        Restore the time window value from the provided settings object.
+
+        Parameters
+        ----------
+        settings : QSettings
+            Settings store used by the application to persist UI state.
+        """
         try:
             self.time_spinbox.setValue(int(settings.value("logcontrolwidget/timewindow")))
-        except:
+        except Exception:
             pass
-    
+
     # import threading
     def run_timer(self, n, m, x, y):
-        # tim = threading.Event()
+        """
+        Start an automode timer thread to schedule repeated logging sessions.
+
+        Parameters
+        ----------
+        n : int
+            Number of iterations (0 means infinite loop until stopped).
+        m : int | float
+            Delay in seconds before the first start.
+        x : int | float
+            Duration in seconds to log for each iteration.
+        y : int | float
+            Delay in seconds between iterations.
+
+        Returns
+        -------
+        tuple[threading.Thread, Callable[[], None]]
+            The running thread and a `stop_timer` function to signal a stop.
+        """
         def timer_thread():
             nonlocal stop_flag
             self.is_waiting_to_start = True
             self.controller.start_auto_log()
             self.controller.start_waiting_auto_log()
-            # tim.wait(m)
             time.sleep(m)  # Wait M seconds before the first start
             self.is_waiting_to_start = False
             self.controller.stop_waiting_auto_log()
@@ -515,7 +782,6 @@ class HSDLogControlWidget(ComponentWidget):
                         self.controller.stop_idle_auto_log()
                     else:
                         self.controller.set_automode_status(AutomodeStatus.AUTOMODE_UNSTARTED)
-                        # self.controller.set_automode_enabled(False)
                         self.controller.stop_log(1)
             else:
                 while True:
@@ -535,9 +801,9 @@ class HSDLogControlWidget(ComponentWidget):
                     self.controller.stop_idle_auto_log()
 
             self.controller.stop_auto_log()
-                    
+
         stop_flag = False
-        
+
         def stop_timer():
             nonlocal stop_flag
             stop_flag = True

@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# coding: utf-8
+# *****************************************************************************
+#  * @file    CheckMCPConnectionWindow.py
+#  * @author  SRA
 # ******************************************************************************
 # * @attention
 # *
@@ -10,16 +15,60 @@
 # *
 # *
 # ******************************************************************************
-#
+"""Connection error helper dialog for Motor Control boards.
 
-from PySide6.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel, QPushButton, QApplication, QSpacerItem, QSizePolicy
+This module defines a themed, modal dialog that informs users when a connection to the
+motor control board cannot be established. It cycles through instructional images and
+provides clear guidance and a Close action to exit the application.
+
+Responsibilities:
+- Present a non-closable, application-modal dialog to avoid conflicting actions.
+- Show a prominent title, instructional text, and an image area.
+- Rotate a set of context images on a timer to guide troubleshooting.
+- Offer a single Close button that exits the application cleanly.
+
+Design Notes:
+- Uses PySide6 widgets and a 2-second `QTimer` for image rotation.
+- Applies project theme colors and button styles (`STDTDL_PushButton`).
+- Docstrings follow the Parameters/Returns style and 100-character wrapping.
+"""
+
+from PySide6.QtWidgets import (
+    QDialog,
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QPushButton,
+    QApplication,
+    QSpacerItem,
+    QSizePolicy,
+)
 from PySide6.QtGui import QFont, QPixmap
 from PySide6.QtCore import Qt, QTimer
 
 from stdatalog_gui.UI.styles import STDTDL_PushButton
 
 class CheckMCPConnectionWindow(QDialog):
+    """Modal dialog informing the user about MCP connection issues.
+
+    Parameters:
+    - parent (QWidget | None): Optional parent widget.
+
+    Attributes:
+    - image_label (QLabel): Displays the rotating troubleshooting images.
+    - images (list[str]): Ordered list of image paths to display.
+    - current_image_index (int): Index of the currently shown image.
+    - timer (QTimer): Triggers periodic image changes.
+    """
     def __init__(self, parent=None):
+        """Initialize the dialog UI, styles, and image rotation timer.
+
+        Parameters:
+        - parent (QWidget | None): Optional parent for window modality/ownership.
+
+        Returns:
+        - None
+        """
         super().__init__(parent)
 
         self.setWindowTitle("Connection Error")
@@ -36,7 +85,9 @@ class CheckMCPConnectionWindow(QDialog):
         layout.setContentsMargins(20, 20, 20, 20)  # Add margins: left, top, right, bottom
 
         # Title Label
-        title_label = QLabel("Unable to establish connection with motor control board")
+        title_label = QLabel(
+            "Unable to establish connection with motor control board"
+        )
         title_label.setFont(QFont("", 14, QFont.Bold))
         title_label.setStyleSheet("color: #e6007e; font-weight: bold;")
         layout.addWidget(title_label, alignment=Qt.AlignCenter)
@@ -57,9 +108,11 @@ class CheckMCPConnectionWindow(QDialog):
 
         # Instruction Label
         instruction_label = QLabel(
-            "Please ensure the following:\n"
-            "- Powerup all the control and power motor board.\n"
-            "- Properly connect the controller and motor target board."
+            (
+                "Please ensure the following:\n"
+                "- Powerup all the control and power motor board.\n"
+                "- Properly connect the controller and motor target board."
+            )
         )
         instruction_label.setFont(QFont("", 12))
         layout.addWidget(instruction_label, alignment=Qt.AlignLeft)
@@ -104,11 +157,32 @@ class CheckMCPConnectionWindow(QDialog):
         self.change_image()  # Set the initial image
 
     def change_image(self):
+        """Advance to the next troubleshooting image and show it.
+
+        Parameters:
+        - None
+
+        Returns:
+        - None
+        """
         pixmap = QPixmap(self.images[self.current_image_index])
-        scaled_pixmap = pixmap.scaled(400, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        scaled_pixmap = pixmap.scaled(
+            400,
+            300,
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation,
+        )
         self.image_label.setPixmap(scaled_pixmap)
         self.current_image_index = (self.current_image_index + 1) % len(self.images)
 
     def close_dialog(self):
+        """Close the dialog and quit the application.
+
+        Parameters:
+        - None
+
+        Returns:
+        - None
+        """
         self.close()
         QApplication.quit()

@@ -1,4 +1,8 @@
- 
+#!/usr/bin/env python
+# coding: utf-8
+# *****************************************************************************
+#  * @file    ClassifierOutputWidget.py
+#  * @author  SRA
 # ******************************************************************************
 # * @attention
 # *
@@ -11,7 +15,9 @@
 # *
 # *
 # ******************************************************************************
-#
+"""
+
+"""
 
 from collections import deque
 import os
@@ -38,14 +44,14 @@ class ClassifierOutputWidget(PlotWidget):
             parent ([type], optional): [description]. Defaults to None.
         """
         super().__init__(controller, comp_name, comp_display_name, p_id, parent, left_label)
-        
+
         # Clear PlotWidget inherited graphic elements (mantaining all attributes, functions and signals)
         for i in reversed(range(self.layout().count())): 
             self.layout().itemAt(i).widget().setParent(None)
-    
+
         self._data = dict() # dict of queues
         self._data[0] = deque(maxlen=200000)
-        
+
         self.parent_widget = parent
 
         self.out_classes = out_classes
@@ -137,7 +143,7 @@ class ClassifierOutputWidget(PlotWidget):
 
         self.timer_interval_ms = self.timer_interval*700
         self.layout().addWidget(self.plot_widget)
-        
+
     def setOpacity(self, pixmap:QPixmap, perc):
         new_pix = QPixmap(pixmap.size())
         new_pix.fill(Qt.transparent)
@@ -146,10 +152,10 @@ class ClassifierOutputWidget(PlotWidget):
         painter.drawPixmap(QPoint(), pixmap)
         painter.end()
         return new_pix
-    
+
     def update_plot_characteristics(self, plot_params):
         pass
-    
+
     @Slot(bool)
     def s_is_detecting(self, status: bool):
         if status:
@@ -158,7 +164,7 @@ class ClassifierOutputWidget(PlotWidget):
         else:
             if self.timer.isActive():
                 self.timer.stop()
-            
+
     @Slot()
     def s_is_logging(self, status: bool):
         if status:
@@ -167,8 +173,7 @@ class ClassifierOutputWidget(PlotWidget):
         else:
             if self.timer.isActive():
                 self.timer.stop()
-        
-    
+
     def update_plot(self):
         if len(self._data[0]) > 0: 
             if not self.is_plotting_out:

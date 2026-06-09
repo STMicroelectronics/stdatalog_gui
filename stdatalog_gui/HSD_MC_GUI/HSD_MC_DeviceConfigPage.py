@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+# coding: utf-8
 # *****************************************************************************
-#  * @file    DeviceConfigPage.py
+#  * @file    HSD_MC_DeviceConfigPage.py
 #  * @author  SRA
 # ******************************************************************************
 # * @attention
@@ -13,7 +15,14 @@
 # *
 # *
 # ******************************************************************************
-#
+"""
+Motor Control device configuration page.
+
+This module defines `HSD_MC_DeviceConfigPage`, a specialization of the generic device
+configuration page for motor control (MC). It wires actuator and algorithm components,
+creates appropriate widgets (configuration, control, plotting), and manages visibility
+and logging state interactions specific to MC components.
+"""
 
 from PySide6.QtCore import Slot
 from stdatalog_gui.HSD_MC_GUI.Widgets.HSD_MC_ClassifierOutputWidget import HSD_MC_ClassifierOutputWidget
@@ -31,32 +40,87 @@ import stdatalog_core.HSD_utils.logger as logger
 log = logger.setup_applevel_logger(is_debug = False, file_name= "app_debug.log")
 
 class HSD_MC_DeviceConfigPage(HSD_DeviceConfigPage):
-    
+    """Device configuration page tailored for motor control components.
+
+    Parameters
+    ----------
+    page_widget : QWidget
+        The container widget hosting the configuration UI.
+    controller : STDTDL_Controller
+        Application controller coordinating component discovery, status, and plotting.
+
+    Attributes
+    ----------
+    slow_mc_telemetries : list
+        Tracks slow telemetries used by plotting.
+    fast_mc_telemetries : list
+        Tracks fast telemetries used by plotting.
+    """
+
     def __init__(self, page_widget, controller):
         super().__init__(page_widget, controller)
         self.slow_mc_telemetries = []
         self.fast_mc_telemetries = []
-    
+
     @Slot(str, dict)
     def s_component_found(self, comp_name, comp_interface):
-        if comp_name == "motor_controller":
-            properties = [content for content in comp_interface.contents if isinstance(content.type, list) and any(e.name == 'PROPERTY' for e in content.type)]
-            show_properties = [pro for pro in properties if pro.description is None or (pro.description.en is not None and pro.description.en != 'hidden')]
+        """Handle discovery of MC-related components and set up their widgets.
 
-            comp_display_name = comp_interface.display_name if isinstance(comp_interface.display_name, str) else comp_interface.display_name.en
-            self.motor_config_widget = HSDComponentWidget(self.controller, comp_name, comp_display_name, ComponentType.ACTUATOR, show_properties, self.comp_id, self.device_config_widget)
+        Parameters
+        ----------
+        comp_name : str
+            Component name returned by discovery.
+        comp_interface : dict | Any
+            Interface descriptor including contents and display name.
+        """
+        if comp_name == "motor_controller":
+            properties = [
+                content
+                for content in comp_interface.contents
+                if isinstance(content.type, list)
+                and any(e.name == 'PROPERTY' for e in content.type)
+            ]
+            show_properties = [
+                pro
+                for pro in properties
+                if pro.description is None
+                or (pro.description.en is not None and pro.description.en != 'hidden')
+            ]
+
+            comp_display_name = (
+                comp_interface.display_name
+                if isinstance(comp_interface.display_name, str)
+                else comp_interface.display_name.en
+            )
+            self.motor_config_widget = HSDComponentWidget(
+                self.controller,
+                comp_name,
+                comp_display_name,
+                ComponentType.ACTUATOR,
+                show_properties,
+                self.comp_id,
+                self.device_config_widget,
+            )
             self.controller.add_component_config_widget(self.motor_config_widget)
             self.device_config_widget.layout().addWidget(self.motor_config_widget)
-            
+
             self.controller.fill_component_status(comp_name)
-            self.motor_control_widget = HSD_MC_ControlWidget(self.controller, comp_contents=comp_interface.contents, parent=self.widget_header)
+            self.motor_control_widget = HSD_MC_ControlWidget(
+                self.controller,
+                comp_contents=comp_interface.contents,
+                parent=self.widget_header,
+            )
             self.controller.add_component_config_widget(self.motor_control_widget)
             self.add_header_widget(self.motor_control_widget)
-            
+
         elif comp_name == "log_controller":
             c_status = self.controller.get_component_status(comp_name)
             if "controller_type" in c_status["log_controller"]:
-                self.log_control_widget = HSD_MC_LogControlWidget(self.controller, comp_contents=comp_interface.contents, parent=self.widget_header)
+                self.log_control_widget = HSD_MC_LogControlWidget(
+                    self.controller,
+                    comp_contents=comp_interface.contents,
+                    parent=self.widget_header,
+                )
                 self.controller.set_rtc_time()
                 self.controller.add_component_config_widget(self.log_control_widget)
                 self.add_header_widget(self.log_control_widget)
@@ -66,45 +130,108 @@ class HSD_MC_DeviceConfigPage(HSD_DeviceConfigPage):
 
     @Slot(str, dict)
     def s_actuator_component_found(self, comp_name, comp_interface):
-        comp_display_name = comp_interface.display_name if isinstance(comp_interface.display_name, str) else comp_interface.display_name.en
+        """Handle actuator component discovery and attach plotting widgets.
+
+        Parameters
+        ----------
+        comp_name : str
+            Name of the actuator component.
+        comp_interface : dict | Any
+            Interface descriptor object.
+        """
+        comp_display_name = (
+            comp_interface.display_name
+            if isinstance(comp_interface.display_name, str)
+            else comp_interface.display_name.en
+        )
         super().s_actuator_component_found(comp_name, comp_interface)
 
         comp_status = self.controller.get_component_status(comp_name)
-        plot_params = self.controller.get_plot_params(comp_name, ComponentType.ACTUATOR, comp_interface, comp_status)
+        plot_params = self.controller.get_plot_params(
+            comp_name, ComponentType.ACTUATOR, comp_interface, comp_status
+        )
+
+        actuator_plot_widget = None
 
         if comp_name == DTDLUtils.MC_SLOW_TELEMETRY_COMP_NAME:
-            actuator_plot_widget = HSD_MC_SlowTelemetriesPlotWidget(self.controller, comp_name, comp_display_name, plot_params, 30, p_id=self.graph_id, parent=self.plots_widget)
-        
+            actuator_plot_widget = HSD_MC_SlowTelemetriesPlotWidget(
+                self.controller,
+                comp_name,
+                comp_display_name,
+                plot_params,
+                30,
+                p_id=self.graph_id,
+                parent=self.plots_widget,
+            )
+
         elif comp_name == DTDLUtils.MC_FAST_TELEMETRY_COMP_NAME:
-            actuator_plot_widget = HSD_MC_FastTelemetriesPlotWidget(self.controller, comp_name, comp_display_name, plot_params, 30, p_id=self.graph_id, parent=self.plots_widget)
-            
-        self.controller.add_plot_widget(actuator_plot_widget, plot_params.enabled)
-        self.plots_widget.layout().addWidget(actuator_plot_widget)
-        actuator_plot_widget.setVisible(plot_params.enabled)
-        
+            actuator_plot_widget = HSD_MC_FastTelemetriesPlotWidget(
+                self.controller,
+                comp_name,
+                comp_display_name,
+                plot_params,
+                30,
+                p_id=self.graph_id,
+                parent=self.plots_widget,
+            )
+
+        if actuator_plot_widget is not None:
+            self.controller.add_plot_widget(actuator_plot_widget, plot_params.enabled)
+            self.plots_widget.layout().addWidget(actuator_plot_widget)
+            actuator_plot_widget.setVisible(plot_params.enabled)
+
         self.graph_id +=1
-    
+
     @Slot(str, dict)
     def s_algorithm_component_found(self, comp_name, comp_interface):
+        """Handle discovery of algorithm components (e.g., classifier).
+
+        For `ai_motor_classifier`, attach configuration and output plot widgets.
+        """
         if comp_name == "ai_motor_classifier":
-            comp_display_name = comp_interface.display_name if isinstance(comp_interface.display_name, str) else comp_interface.display_name.en
-            
-            alg_config_widget = HSDComponentWidget(self.controller, comp_name, comp_display_name, ComponentType.ALGORITHM, comp_interface.contents, self.comp_id, self.device_config_widget)
+            comp_display_name = (
+                comp_interface.display_name
+                if isinstance(comp_interface.display_name, str)
+                else comp_interface.display_name.en
+            )
+
+            alg_config_widget = HSDComponentWidget(
+                self.controller,
+                comp_name,
+                comp_display_name,
+                ComponentType.ALGORITHM,
+                comp_interface.contents,
+                self.comp_id,
+                self.device_config_widget,
+            )
             self.comp_id += 1
             self.controller.add_component_config_widget(alg_config_widget)
             self.device_config_widget.layout().addWidget(alg_config_widget)
-        
-            comp_display_name = comp_interface.display_name if isinstance(comp_interface.display_name, str) else comp_interface.display_name.en
+
+            comp_display_name = (
+                comp_interface.display_name
+                if isinstance(comp_interface.display_name, str)
+                else comp_interface.display_name.en
+            )
             out_classes = self.controller.get_output_classes()
             ai_tool = self.controller.get_ai_classifier_tool()
-            alg_plot_widget = HSD_MC_ClassifierOutputWidget(self.controller, comp_name, comp_display_name, out_classes=out_classes, ai_tool=ai_tool, p_id=self.graph_id, parent=self.plots_widget)
+            alg_plot_widget = HSD_MC_ClassifierOutputWidget(
+                self.controller,
+                comp_name,
+                comp_display_name,
+                out_classes=out_classes,
+                ai_tool=ai_tool,
+                p_id=self.graph_id,
+                parent=self.plots_widget,
+            )
             self.graph_id +=1
             self.controller.add_plot_widget(alg_plot_widget, True)
             self.plots_widget.layout().addWidget(alg_plot_widget)
             alg_plot_widget.setVisible(True)
         self.controller.fill_component_status(comp_name)
-    
+
     def motor_config_widget_is_logging(self, status:bool):
+        """Enable/disable motor configuration widget based on logging status."""
         self.motor_config_widget.contents_widget.setEnabled(not status)
         if status:
             style_split = self.motor_config_widget.frame_component_config.styleSheet().split(';')
@@ -117,9 +244,9 @@ class HSD_MC_DeviceConfigPage(HSD_DeviceConfigPage):
 
     @Slot(bool)
     def s_is_logging(self, status:bool, interface:int):
+        """Update UI elements when logging starts/stops for MC components."""
         self.endisable_logging_message(status)
         self.select_all_button.setEnabled(not status)
         self.endisable_log_controller_components(status)
         self.endisable_component_config(status, ["tags_info","device_info", "motor_controller"])
         self.motor_config_widget_is_logging(status)
-        

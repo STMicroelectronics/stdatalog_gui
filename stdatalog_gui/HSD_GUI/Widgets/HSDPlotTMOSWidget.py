@@ -1,11 +1,77 @@
+# ******************************************************************************
+#  * @file    HSDPlotTMOSWidget.py
+#  * @author  SRA
+# ******************************************************************************
+# * @attention
+# *
+# * Copyright (c) 2022 STMicroelectronics.
+# * All rights reserved.
+# *
+# * This software is licensed under terms that can be found in the LICENSE file
+# * in the root directory of this software component.
+# * If no LICENSE file comes with this software, it is provided AS-IS.
+# *
+# *
+# ******************************************************************************
+#
+"""
+TMOS presence/motion/temperature plotting widget for the HSD GUI.
+
+This module provides `HSDPlotTMOSWidget`, a composite widget that arranges multiple
+line plots for TMOS-derived telemetry such as ambient temperature, object
+temperature, presence, and motion. Each logical plot is handled by an internal
+`HSDPlotLinesTMOSWidget` instance. The widget updates the visibility and
+characteristics of sub-plots based on `SensorPresenscePlotParams`.
+
+Highlights
+----------
+- Preserves base `PlotWidget` wiring while replacing the default graph area with
+    specialized TMOS line plots.
+- Supports dynamic enable/disable of sub-plots and redraw on parameter changes.
+- Processes streaming data vectors and routes channel slices to the appropriate
+    sub-plot widgets.
+"""
 from stdatalog_gui.Utils.PlotParams import SensorPresenscePlotParams
 from stdatalog_gui.Widgets.Plots.PlotWidget import PlotWidget
 from stdatalog_gui.HSD_GUI.Widgets.HSDPlotLinesTMOSWidget import HSDPlotLinesTMOSWidget
 
 class HSDPlotTMOSWidget(PlotWidget):
-    def __init__(self, controller, comp_name, comp_display_name, plot_params, p_id = 0, parent=None):
+    """
+    Composite TMOS plotting widget with multiple line charts.
+
+    Parameters
+    ----------
+    controller : object
+        Application controller used by the base `PlotWidget`.
+    comp_name : str
+        Component name (unique identifier for the plot source).
+    comp_display_name : str
+        Human-friendly display name for the plot container.
+    plot_params : SensorPresenscePlotParams
+        Plot parameters defining which sub-plots are enabled and their units.
+    p_id : int, optional
+        Plot identifier used by the base class, by default 0.
+    parent : QWidget | None, optional
+        Parent widget, by default `None`.
+
+    Notes
+    -----
+    The widget instantiates one `HSDPlotLinesTMOSWidget` per entry in
+    `plot_params.plots_params_dict`, clears inherited visuals from the base class,
+    and inserts the TMOS sub-plot widgets into the content frame.
+    """
+
+    def __init__(
+        self,
+        controller,
+        comp_name,
+        comp_display_name,
+        plot_params,
+        p_id=0,
+        parent=None,
+    ):
         super().__init__(controller, comp_name, comp_display_name, p_id, parent, "")
-        
+
         self.graph_curves = dict()
         self.one_t_interval_resampled = dict()
 
@@ -14,15 +80,23 @@ class HSDPlotTMOSWidget(PlotWidget):
         self.plots_params = plot_params
 
         self.graph_widgets = {}
-        
+
         for i, p in enumerate(plot_params.plots_params_dict):
             unit = self.plots_params.plots_params_dict[p].unit
-            self.plots_params.plots_params_dict[p].unit = "{}".format(p,unit)
-            pw = HSDPlotLinesTMOSWidget(self.controller, self.plots_params.plots_params_dict[p].comp_name, p, plot_params.plots_params_dict[p], i, self)
+            self.plots_params.plots_params_dict[p].unit = f"{unit}"
+            pw = HSDPlotLinesTMOSWidget(
+                self.controller,
+                self.plots_params.plots_params_dict[p].comp_name,
+                p,
+                plot_params.plots_params_dict[p],
+                i,
+                self,
+            )
             self.graph_widgets[p] = pw
 
-            # Clear PlotWidget inherited graphic elements (mantaining all attributes, functions and signals)
-            for i in reversed(range(pw.layout().count())): 
+            # Clear PlotWidget inherited graphic elements while preserving attributes,
+            # functions and signals.
+            for i in reversed(range(pw.layout().count())):
                 pw.layout().itemAt(i).widget().setParent(None)
 
             self.contents_frame.layout().addWidget(self.graph_widgets[p].graph_widget)
@@ -31,36 +105,87 @@ class HSDPlotTMOSWidget(PlotWidget):
         self.update_plot_characteristics(plot_params)
 
     def update_plot_characteristics(self, plot_params: SensorPresenscePlotParams):
+        """
+        Update visibility and styling of TMOS sub-plots.
+
+        Parameters
+        ----------
+        plot_params : SensorPresenscePlotParams
+            New plotting parameters; controls which sub-plots are enabled and
+            carries per-plot metadata (e.g., title, unit).
+        """
         self.plots_params = plot_params
         for p in plot_params.plots_params_dict:
             p_enabled = plot_params.plots_params_dict[p].enabled
             self.graph_widgets[p].graph_widget.setVisible(p_enabled)
             self.graph_widgets[p].redraw_plot(plot_params.plots_params_dict[p])
-        
+
         if self.app_qt is not None:
             self.app_qt.processEvents()
-        
+
     # @Slot(bool)
     def s_is_logging(self, status: bool, interface: int):
+        """
+        React to logging start/stop and refresh enabled sub-plots.
+
+        Parameters
+        ----------
+        status : bool
+            True if logging is starting, False if stopping.
+        interface : int
+            Link/interface index. For 1 or 3, prints a USB logging message and
+            updates enabled fast telemetry sub-plots.
+        """
         if interface == 1 or interface == 3:
-            print("Component {} is logging via USB: {}".format(self.comp_name,status))
+            print(f"Component {self.comp_name} is logging via USB: {status}")
             if status:
-                #Get number of enabled fast telemetries
-                self.ft_enabled_list = [ ft for ft in self.plots_params.plots_params_dict if self.plots_params.plots_params_dict[ft].enabled]
+                # Get number of enabled fast telemetries
+                self.ft_enabled_list = [
+                    ft
+                    for ft in self.plots_params.plots_params_dict
+                    if self.plots_params.plots_params_dict[ft].enabled
+                ]
                 self.update_plot_characteristics(self.plots_params)
             else:
                 self.ft_enabled_list = []
-    
+
     def update_plot(self):
+        """
+        Forward update calls to the base plot implementation.
+        """
         super().update_plot()
 
     def add_data(self, data):
-        amb = [data[0]] # Tambient (raw)
+        """
+        Route data slices to the appropriate TMOS sub-plot widgets.
+
+        Parameters
+        ----------
+        data : Sequence
+            Data vector for TMOS telemetry. Expected channel order:
+            - 0: Ambient temperature (raw)
+            - 1: Object temperature (raw)
+            - 2: Object temperature (embedded compensation)
+            - 3: Presence metric
+            - 4: Presence flag (raw)
+            - 5: Motion metric
+            - 6: Motion flag (raw)
+            - 7: Object temperature (software compensation)
+            - 8: Object temperature change (software compensation)
+            - 9: Motion flag (software compensation)
+            - 10: Presence flag (software compensation)
+        """
+        amb = [data[0]]  # Tambient (raw)
         self.graph_widgets["Ambient"].add_data(amb)
-        
-        obj = [data[1], data[2], data[7], data[8]] # Tobject (raw) | Tobject (emb_comp) | Tobject (sw_comp) | Tobject_change (sw_comp)
+
+        # Tobject (raw) | Tobject (emb_comp) | Tobject (sw_comp) | Tobject_change (sw_comp)
+        obj = [data[1], data[2], data[7], data[8]]
         self.graph_widgets["Object"].add_data(obj)
-        pres = [data[3], data[4], data[10]] # Tpresence | Presence flag | Presence flag (sw_comp)
+
+        # Tpresence | Presence flag | Presence flag (sw_comp)
+        pres = [data[3], data[4], data[10]]
         self.graph_widgets["Presence"].add_data(pres)
-        mot = [data[5], data[6], data[9]] # Tmotion | Motion flag | Motion flag (sw_comp)
+
+        # Tmotion | Motion flag | Motion flag (sw_comp)
+        mot = [data[5], data[6], data[9]]
         self.graph_widgets["Motion"].add_data(mot)
