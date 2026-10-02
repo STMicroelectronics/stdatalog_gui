@@ -109,6 +109,14 @@ class PlotLinesWidget(PlotWidget):
         """
         self.plot_params = plot_params
 
+        # Drop curves/buffers left over from a previous (larger) configuration
+        for i in [c for c in self.graph_curves if c >= self.plot_params.dimension]:
+            self.graph_widget.removeItem(self.graph_curves[i])
+            del self.graph_curves[i]
+            self._data.pop(i, None)
+            self.y_queue.pop(i, None)
+            self.one_t_interval_resampled.pop(i, None)
+
         for i in range(self.plot_params.dimension):
             self.one_t_interval_resampled[i] = np.zeros(self.plot_t_interval_size)
 
@@ -121,7 +129,7 @@ class PlotLinesWidget(PlotWidget):
             self._data[i] = deque(maxlen=200000)
             self.y_queue[i] = deque(maxlen=self.plot_len)
             self.y_queue[i].extend(np.zeros(self.plot_len))
-            if len(self.graph_curves) < self.plot_params.dimension:
+            if i not in self.graph_curves:
                 self.graph_curves[i] = self.graph_widget.plot()
                 self.graph_curves[i] = pg.PlotDataItem(
                     pen={
@@ -134,6 +142,8 @@ class PlotLinesWidget(PlotWidget):
                     ignoreBounds=True,
                 )
                 self.graph_widget.addItem(self.graph_curves[i])
+            self.graph_curves[i].setVisible(True)
+            self.graph_curves[i].setData(x=self.x_data, y=np.array(self.y_queue[i]))
 
         if self.app_qt is not None:
             self.app_qt.processEvents()

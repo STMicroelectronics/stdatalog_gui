@@ -31,28 +31,30 @@ Responsibilities:
 
 from collections import deque
 from functools import partial
+import sys
 
 import numpy as np
 
-from PySide6.QtCore import Slot, Qt, QTimer, QPoint
+from PySide6.QtCore import Slot, Qt, QTimer, QPoint, QPointF
 from PySide6.QtGui import QColor, QIcon, QIntValidator, QPainter, QPen, QBrush
-from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QFrame, QPushButton, \
+from PySide6.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QFrame, QPushButton, \
     QLineEdit, QButtonGroup, QLabel, QGridLayout
 from PySide6.QtCore import Signal
 import pyqtgraph as pg
 
+import stdatalog_core.HSD_utils.logger as logger
 from stdatalog_gui.UI.styles import STDTDL_Chip, STDTDL_LineEdit, STDTDL_PushButton
 from stdatalog_gui.Utils import UIUtils
 from stdatalog_gui.Widgets.Plots.PlotWidget import CustomPGPlotWidget, PlotWidget
 
-from pkg_resources import resource_filename
-flip_x = resource_filename('stdatalog_gui.UI.icons', 'outline_sync_alt_white_18.png')
-flip_y = resource_filename('stdatalog_gui.UI.icons', 'outline_sync_alt_white_18_rot90.png')
-rot_clockwise = resource_filename('stdatalog_gui.UI.icons', 'outline_autorenew_white_18dp.png')
-rot_cclockwise = resource_filename(
-    'stdatalog_gui.UI.icons',
-    'outline_autorenew_white_flipped_18dp.png'
-)
+log = logger.get_logger(__name__)
+
+import importlib.resources
+
+flip_x = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('outline_sync_alt_white_18.png'))
+flip_y = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('outline_sync_alt_white_18_rot90.png'))
+rot_clockwise = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('outline_autorenew_white_18dp.png'))
+rot_cclockwise = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('outline_autorenew_white_flipped_18dp.png'))
 
 roi_colors_rgba = [ [182, 206, 95, 128],
                     [98, 195, 235, 128],
@@ -68,6 +70,9 @@ roi_qcolors = [ QColor('#B6CE5F'),
 
 MIN_DIST = 0
 MAX_DIST = 4000
+MAX_DETAIL_ROWS = 8
+MAX_DETAIL_COLS = 8
+LABEL_SAFETY_MARGIN = 8
 ROI_NUMBER = 5
 VALIDITY_MASK_VALID_VALUE_1 = 5
 VALIDITY_MASK_VALID_VALUE_2 = 9
@@ -84,6 +89,7 @@ class CustomHeatmapPlotWidget(CustomPGPlotWidget):
     def mouseMoveEvent(self, ev):
         """Disable default mouse move behavior for custom interaction policy."""
         pass
+
 
 class Chip(QPushButton):
     """Small colored, checkable button used as an ROI selector.
@@ -224,10 +230,10 @@ class ROISettingsWidget(QFrame):
         self.rot_label.setStyleSheet("font:700")
         self.rot_label.setAlignment(Qt.AlignCenter)
 
-        rot_label_title = QLabel("Data Rotation:")
-        flip_x_label_title = QLabel("Data Horizontal Flip:")
-        flip_y_label_title = QLabel("Data Vertical Flip:")
-        roi_label_title = QLabel("ROI settings:")
+        self.rot_label_title = QLabel("Data Rotation:")
+        self.flip_x_label_title = QLabel("Data Horizontal Flip:")
+        self.flip_y_label_title = QLabel("Data Vertical Flip:")
+        self.roi_label_title = QLabel("ROI settings:")
 
         rotation_layout = QHBoxLayout()
         rotation_layout.addWidget(self.rot_left_button)
@@ -254,16 +260,16 @@ class ROISettingsWidget(QFrame):
         flip_y_layout.addWidget(self.flip_y_button)
         flip_y_layout.addWidget(self.flip_y_label)
 
-        self.layout().addWidget(rot_label_title)
+        self.layout().addWidget(self.rot_label_title)
         self.layout().insertLayout(1, rotation_layout)
-        self.layout().addWidget(flip_x_label_title)
+        self.layout().addWidget(self.flip_x_label_title)
         self.layout().insertLayout(3, flip_x_layout)
-        self.layout().addWidget(flip_y_label_title)
+        self.layout().addWidget(self.flip_y_label_title)
         self.layout().insertLayout(5, flip_y_layout)
 
         global_thresh_layout = QVBoxLayout()
-        global_thresh_label = QLabel("Global threshold:")
-        global_thresh_layout.addWidget(global_thresh_label)
+        self.global_thresh_label = QLabel("Global threshold:")
+        global_thresh_layout.addWidget(self.global_thresh_label)
         self.global_thresh_value = QLineEdit()
         self.global_thresh_value.setText(str(MIN_DIST))
         self.global_thresh_value.setFixedSize(60,30)
@@ -282,16 +288,16 @@ class ROISettingsWidget(QFrame):
         global_thresh_layout.addWidget(self.global_thresh_value)
         self.layout().insertLayout(6, global_thresh_layout)
 
-        self.layout().addWidget(roi_label_title)
+        self.layout().addWidget(self.roi_label_title)
         rois_layout = QGridLayout()
-        roi_col_label = QLabel("region")
-        roi_col_label.setStyleSheet("color:#666666;")
-        roi_col_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        rois_layout.addWidget(roi_col_label,0,0)
-        thresh_col_label = QLabel("threshold")
-        thresh_col_label.setStyleSheet("color:#666666;")
-        thresh_col_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        rois_layout.addWidget(thresh_col_label,0,1)
+        self.roi_col_label = QLabel("region")
+        self.roi_col_label.setStyleSheet("color:#666666;")
+        self.roi_col_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        rois_layout.addWidget(self.roi_col_label,0,0)
+        self.thresh_col_label = QLabel("threshold")
+        self.thresh_col_label.setStyleSheet("color:#666666;")
+        self.thresh_col_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        rois_layout.addWidget(self.thresh_col_label,0,1)
 
         for i in range(0, ROI_NUMBER):
             self.add_roi_chip(rois_layout, i, 6)
@@ -410,6 +416,18 @@ class ROISettingsWidget(QFrame):
                 self.rois_threshold_lineedits[roi_id].setText(threshold_lineedit.text())
                 self.sig_roi_threshold_set.emit(roi_id, int(threshold_lineedit.text()))
 
+    def set_roi_controls_visible(self, visible: bool):
+        """Show/hide ROI and threshold controls while keeping orientation controls active."""
+        self.global_thresh_label.setVisible(visible)
+        self.global_thresh_value.setVisible(visible)
+        self.roi_label_title.setVisible(visible)
+        self.roi_col_label.setVisible(visible)
+        self.thresh_col_label.setVisible(visible)
+
+        for roi_id in range(ROI_NUMBER):
+            self.rois_chips[roi_id].setVisible(visible)
+            self.rois_threshold_lineedits[roi_id].setVisible(visible)
+
 class PlotHeatmapWidget(PlotWidget):
     """Real-time heatmap with ROI thresholding and presence detection.
 
@@ -447,10 +465,14 @@ class PlotHeatmapWidget(PlotWidget):
         plot_label="",
         p_id=0,
         parent=None,
+        compact_controls=False,
+        legacy_validity_mask=False,
     ):
         super().__init__(controller, comp_name, comp_display_name, p_id, parent, plot_label)
 
         self.plot_label = plot_label
+        self.compact_controls = compact_controls
+        self.legacy_validity_mask = legacy_validity_mask
         # Clear PlotWidget inherited graphic elements
         # (mantaining all attributes, functions and signals)
         for i in reversed(range(self.contents_frame.layout().count())):
@@ -465,19 +487,29 @@ class PlotHeatmapWidget(PlotWidget):
 
         self.graph_widget = CustomHeatmapPlotWidget(parent = self)
 
-        self.heatmap_shape = heatmap_shape
+        self.sensor_heatmap_shape = tuple(heatmap_shape)
+        self.full_detail_mode = (
+            self.sensor_heatmap_shape[0] <= MAX_DETAIL_ROWS
+            and self.sensor_heatmap_shape[1] <= MAX_DETAIL_COLS
+        )
         self.heatmap_rotation = 0
         self.heatmap_is_x_flipped = False
         self.heatmap_is_y_flipped = False
+        # Display shape is the transposed (x, y) layout expected by pg col-major ImageItem
+        self.heatmap_shape = self.__display_shape_from_transform()
         self.roi_thresolds = {i:MIN_DIST for i in range(ROI_NUMBER)}
         self.presence_threshold = MIN_DIST
         self.global_presence_status = False
 
         self.data = np.zeros(shape=(self.heatmap_shape), dtype='i')
         self._data = deque(maxlen=200000)
+        self.heatmap_levels = (MIN_DIST, MAX_DIST)
 
+        self.validity_mask_available = False
         self.validity_mask = np.zeros(shape=(self.heatmap_shape), dtype='i')
-        self.zones = PlotHeatmapWidget.create_matrix(self.heatmap_shape[0])
+        self.zones = PlotHeatmapWidget.create_matrix(
+            self.heatmap_shape[0], self.heatmap_shape[1]
+        )
         self.rois = {i: {} for i in range(ROI_NUMBER)}
         self.underthresh = {i: [] for i in range(ROI_NUMBER)}
         self.global_underthresh = np.zeros(shape=(self.heatmap_shape), dtype='i')
@@ -508,6 +540,7 @@ class PlotHeatmapWidget(PlotWidget):
 
         self.rois_layout = QVBoxLayout()
         self.rois_frame = ROISettingsWidget(controller)
+        self.rois_frame.set_roi_controls_visible(self.full_detail_mode)
         self.rois_frame.sig_data_rotation.connect(self.data_rotation_callback)
         self.rois_frame.sig_selected_roi.connect(self.set_selected_roi_id)
         self.rois_frame.sig_data_x_flip.connect(self.data_flip_x_callback)
@@ -518,20 +551,45 @@ class PlotHeatmapWidget(PlotWidget):
         )
         self.roi_chips = self.rois_frame.rois_chips
 
-        self.plot_layout = QHBoxLayout()
+        self.plot_layout = QVBoxLayout() if self.compact_controls else QHBoxLayout()
         self.plot_frame = QFrame()
         self.plot_frame.setStyleSheet("QFrame { border: transparent;}")
         self.plot_frame.setContentsMargins(0,0,0,0)
         self.plot_frame.setLayout(self.plot_layout)
         self.plot_layout.addWidget(self.graph_widget)
 
-        main_layout.addWidget(self.rois_frame)
+        if self.compact_controls:
+            self.rois_frame.setParent(self)
+            self.rois_frame.hide()
+            controls = QFrame(self.plot_frame)
+            controls.setStyleSheet("QFrame { background: #272c36; border: 0; border-radius: 4px; }")
+            controls_layout = QHBoxLayout(controls)
+            controls_layout.setContentsMargins(8, 3, 8, 3)
+            controls_layout.setSpacing(5)
+            controls_layout.addStretch()
+            for button, tooltip in ((self.rois_frame.rot_left_button, "Rotate clockwise"),
+                                    (self.rois_frame.rot_right_button, "Rotate counterclockwise")):
+                button.setFixedSize(28, 28)
+                button.setToolTip(tooltip)
+                controls_layout.addWidget(button)
+            controls_layout.addWidget(self.rois_frame.rot_label)
+            for button, tooltip in ((self.rois_frame.flip_x_button, "Flip horizontally"),
+                                    (self.rois_frame.flip_y_button, "Flip vertically")):
+                button.setFixedSize(28, 28)
+                button.setCheckable(True)
+                button.setToolTip(tooltip)
+                controls_layout.addWidget(button)
+            controls_layout.addStretch()
+            self.plot_layout.addWidget(controls)
+        else:
+            main_layout.addWidget(self.rois_frame)
         main_layout.addWidget(self.plot_frame)
         self.contents_frame.layout().addWidget(main_frame)
 
         # Add text items for each pixel
         self.text_items = []
         self.fill_with_text_items()
+        self.graph_widget.getViewBox().sigResized.connect(self._update_text_visibility)
 
         # Add a mouse click event handler to the imageItem
         self.heatmap_img.mouseClickEvent = self.image_item_clicked
@@ -545,35 +603,47 @@ class PlotHeatmapWidget(PlotWidget):
                 self.graph_widget.removeItem(w)
                 w.deleteLater()
         self.text_items = []
+        if not self.full_detail_mode:
+            return
 
-        #add new text items
-        for i in range(self.heatmap_shape[0]):
-            row = []
-            for j in range(self.heatmap_shape[1]):
+        # pyqtgraph col-major convention: array/text indexed as [x][y]
+        for x in range(self.heatmap_shape[0]):
+            col_items = []
+            for y in range(self.heatmap_shape[1]):
                 text_item = pg.TextItem(
-                    text=str(self.data[i, j]),
+                    text=str(self.data[x, y]),
                     color=(200, 200, 200),
                     anchor=(0, 1),
                 )
-                text_item.setPos(j, i)
+                text_item.setPos(x, y)
                 self.graph_widget.addItem(text_item)
-                row.append(text_item)
-            self.text_items.append(row)
+                col_items.append(text_item)
+            self.text_items.append(col_items)
+
+        self._update_text_visibility()
+
+    def _update_text_visibility(self):
+        if not self.text_items:
+            return
+        view_box = self.graph_widget.getViewBox()
+        origin = view_box.mapViewToScene(QPointF(0, 0))
+        cell_width = abs(view_box.mapViewToScene(QPointF(1, 0)).x() - origin.x())
+        cell_height = abs(view_box.mapViewToScene(QPointF(0, 1)).y() - origin.y())
+        fits = all(
+            item.boundingRect().width() + LABEL_SAFETY_MARGIN <= cell_width
+            and item.boundingRect().height() + LABEL_SAFETY_MARGIN <= cell_height
+            for column in self.text_items for item in column
+        )
+        for column in self.text_items:
+            for item in column:
+                item.setVisible(fits)
 
     def update_plot_characteristics(self, heatmap_shape):
         """Reset internal arrays and overlays for a new heatmap shape."""
-        self.heatmap_shape = heatmap_shape
-        self.zones = PlotHeatmapWidget.create_matrix(self.heatmap_shape[0])
-        self.data = np.zeros(shape=(self.heatmap_shape), dtype='i')
-        self._data.clear()
-        self.global_underthresh = np.zeros(shape=(self.heatmap_shape), dtype='i')
-        self.validity_mask = np.zeros(shape=(self.heatmap_shape), dtype='i')
-        self.heatmap_img.setImage(self.data, levels=[MIN_DIST, MAX_DIST])
-        self.graph_widget.getPlotItem()._updateView()
-        # Add text items for each pixel
-        self.fill_with_text_items()
-        if self.app_qt is not None:
-            self.app_qt.processEvents()
+        self.sensor_heatmap_shape = tuple(heatmap_shape)
+        self.__refresh_plot_geometry(clear_rois=True)
+        if sys.platform == 'darwin' and QApplication.platformName() == 'cocoa':
+            self.graph_widget.viewport().update()
 
     @Slot(bool, int)
     def s_is_logging(self, status: bool, interface: int):
@@ -595,82 +665,94 @@ class PlotHeatmapWidget(PlotWidget):
         if len(self._data) > 0 :
             l_data = self._data.popleft()
             if l_data.shape == self.heatmap_shape:
-                self.heatmap_img.setImage(l_data, levels=[MIN_DIST, MAX_DIST])
-                for i in range(self.heatmap_shape[0]):
-                    for j in range(self.heatmap_shape[1]):
-                        curr_data = l_data[i][j]
-                        curr_valid_mask = self.validity_mask[i][j]
-                        if curr_data > MAX_DIST:
-                            self.text_items[j][i].setText("X")
-                            curr_valid_mask = VALIDITY_MASK_INVALID_VALUE
-                            self.global_underthresh[i][j] = 0
-                        else:
-                            self.text_items[j][i].setText(str(curr_data))
-
-                        if curr_valid_mask == VALIDITY_MASK_INVALID_VALUE:
-                            self.text_items[j][i].setColor(self.red_color) #red, invalid
-                            self.global_underthresh[i][j] = 0
-                        else:
-                            self.text_items[j][i].setColor(self.green_color) #green, valid
-                            if curr_data != 0 and curr_data < self.presence_threshold:
-                                self.global_underthresh[i][j] = 1
-                            else:
-                                self.global_underthresh[i][j] = 0
-                        for k in range(ROI_NUMBER):
-                            if len(self.rois[k].keys()) == 0:
-                                self.underthresh[k] = []
-                            elif (i,j) in self.rois[k].keys():
-
-                                if curr_valid_mask == VALIDITY_MASK_INVALID_VALUE:
-                                    if (i,j) in self.underthresh[k]:
-                                        self.underthresh[k].remove((i,j))
+                self.data = l_data
+                levels = self.heatmap_levels or (0, max(1, int(np.max(l_data))))
+                self.heatmap_img.setImage(l_data, levels=levels)
+                if self.full_detail_mode:
+                    for x in range(self.heatmap_shape[0]):
+                        for y in range(self.heatmap_shape[1]):
+                            curr_data = l_data[x][y]
+                            invalid = self.legacy_validity_mask and (
+                                curr_data > MAX_DIST or (
+                                    self.validity_mask_available
+                                    and self.validity_mask[x][y] == VALIDITY_MASK_INVALID_VALUE
+                                )
+                            )
+                            if self.text_items:
+                                if invalid and curr_data > MAX_DIST:
+                                    self.text_items[x][y].setText("X")
                                 else:
-                                    if curr_data < self.roi_thresolds[k]:
-                                        if (i,j) not in self.underthresh[k]:
-                                            self.underthresh[k].append((i,j))
-                                    else:
-                                        if (i,j) in self.underthresh[k]:
-                                            self.underthresh[k].remove((i,j))
-                if (
-                    bool(np.any(self.global_underthresh)) == True
-                    and not np.all(0)
-                    and self.global_presence_status == False
-                ):
-                    self.global_presence_status = True
-                    self.controller.sig_tof_presence_detected.emit(
-                        self.global_presence_status, "tof_presence"
-                    )
-                elif (
-                    bool(np.any(self.global_underthresh)) == False
-                    and not np.all(0)
-                    and self.global_presence_status == True
-                ):
-                    self.global_presence_status = False
-                    self.controller.sig_tof_presence_detected.emit(
-                        self.global_presence_status, "tof_presence"
-                    )
+                                    self.text_items[x][y].setText(str(curr_data))
 
-                for x in range(ROI_NUMBER):
-                    if x in self.underthresh and self.underthresh[x] != []:
-                        if not self.is_roi_flashing[x]:
-                            roi_chip = self.rois_frame.rois_chips[x]
-                            self.is_roi_flashing[x] = True
-                            roi_chip.start_flash()
-                            self.controller.sig_tof_presence_detected_in_roi.emit(
-                                True,
-                                x + 1,
-                                f"Target {x + 1}",
-                            )
-                    else:
-                        if self.is_roi_flashing[x]:
-                            roi_chip = self.rois_frame.rois_chips[x]
-                            self.is_roi_flashing[x] = False
-                            roi_chip.stop_flash()
-                            self.controller.sig_tof_presence_detected_in_roi.emit(
-                                False,
-                                x + 1,
-                                f"Target {x + 1}",
-                            )
+                            if invalid:
+                                if self.text_items:
+                                    self.text_items[x][y].setColor(self.red_color) #red, invalid
+                                self.global_underthresh[x][y] = 0
+                            else:
+                                if self.text_items:
+                                    self.text_items[x][y].setColor(self.green_color) #green, valid
+                                if curr_data != 0 and curr_data < self.presence_threshold:
+                                    self.global_underthresh[x][y] = 1
+                                else:
+                                    self.global_underthresh[x][y] = 0
+                            for k in range(ROI_NUMBER):
+                                if len(self.rois[k].keys()) == 0:
+                                    self.underthresh[k] = []
+                                elif (x, y) in self.rois[k].keys():
+
+                                    if invalid:
+                                        if (x, y) in self.underthresh[k]:
+                                            self.underthresh[k].remove((x, y))
+                                    else:
+                                        if curr_data < self.roi_thresolds[k]:
+                                            if (x, y) not in self.underthresh[k]:
+                                                self.underthresh[k].append((x, y))
+                                        else:
+                                            if (x, y) in self.underthresh[k]:
+                                                self.underthresh[k].remove((x, y))
+                    self._update_text_visibility()
+                    if (
+                        bool(np.any(self.global_underthresh)) == True
+                        and not np.all(0)
+                        and self.global_presence_status == False
+                    ):
+                        self.global_presence_status = True
+                        self.controller.sig_tof_presence_detected.emit(
+                            self.global_presence_status, "tof_presence"
+                        )
+                    elif (
+                        bool(np.any(self.global_underthresh)) == False
+                        and not np.all(0)
+                        and self.global_presence_status == True
+                    ):
+                        self.global_presence_status = False
+                        self.controller.sig_tof_presence_detected.emit(
+                            self.global_presence_status, "tof_presence"
+                        )
+
+                    for x in range(ROI_NUMBER):
+                        if x in self.underthresh and self.underthresh[x] != []:
+                            if not self.is_roi_flashing[x]:
+                                roi_chip = self.rois_frame.rois_chips[x]
+                                self.is_roi_flashing[x] = True
+                                roi_chip.start_flash()
+                                self.controller.sig_tof_presence_detected_in_roi.emit(
+                                    True,
+                                    x + 1,
+                                    f"Target {x + 1}",
+                                )
+                        else:
+                            if self.is_roi_flashing[x]:
+                                roi_chip = self.rois_frame.rois_chips[x]
+                                self.is_roi_flashing[x] = False
+                                roi_chip.stop_flash()
+                                self.controller.sig_tof_presence_detected_in_roi.emit(
+                                    False,
+                                    x + 1,
+                                    f"Target {x + 1}",
+                                )
+                else:
+                    self.global_underthresh.fill(0)
             else:
                 self.heatmap_img.setImage(l_data)
         self._data.clear()
@@ -685,42 +767,59 @@ class PlotHeatmapWidget(PlotWidget):
             of shape `(rows, cols)`. Data are rotated/flipped according to current
             settings before enqueuing.
         """
-        data_shape = self.heatmap_shape[0]*self.heatmap_shape[1]
-        if len(data) == 2:
-            if len(data[0]) % (data_shape) == 0 and len(data[0]) != 0:
-                l_data = data[0][-data_shape:].reshape(self.heatmap_shape).transpose()
-                l_data = np.rot90(l_data, k=-(self.heatmap_rotation % 4))
-                if self.heatmap_is_x_flipped:
-                    l_data = np.flip(l_data, axis=0)
-                if self.heatmap_is_y_flipped:
-                    l_data = np.flip(l_data, axis=1)
-                self._data.append(l_data)
+        if data is None:
+            return
 
-            if len(data[1]) % (data_shape) == 0 and len(data[1]) != 0:
-                self.validity_mask = data[1][-data_shape:].reshape(self.heatmap_shape)
-                self.validity_mask = np.rot90(self.validity_mask, k=-(self.heatmap_rotation % 4))
-                if self.heatmap_is_x_flipped:
-                    self.validity_mask = np.flip(self.validity_mask, axis=0)
-                if self.heatmap_is_y_flipped:
-                    self.validity_mask = np.flip(self.validity_mask, axis=1)
-        if len(data) == self.heatmap_shape[0]:
-            l_data = np.rot90(data, k=-(self.heatmap_rotation % 4))
-            if self.heatmap_is_x_flipped:
-                l_data = np.flip(l_data, axis=0)
-            if self.heatmap_is_y_flipped:
-                l_data = np.flip(l_data, axis=1)
-            self._data.append(l_data)
+        data_shape = self.sensor_heatmap_shape[0] * self.sensor_heatmap_shape[1]
+
+        if isinstance(data, np.ndarray) and data.ndim == 2:
+            if tuple(data.shape) == self.sensor_heatmap_shape:
+                self._data.append(self.__transform_frame(data))
+            elif tuple(data.shape) == self.heatmap_shape:
+                self._data.append(data)
+            return
+
+        if not isinstance(data, (tuple, list)) or len(data) == 0:
+            return
+
+        if len(data[0]) % data_shape != 0 or len(data[0]) == 0:
+            log.warning(
+                "Discarded ToF frame: values length %s is not a multiple of %s",
+                len(data[0]),
+                data_shape,
+            )
+            return
+
+        l_data = np.asarray(data[0][-data_shape:]).reshape(self.sensor_heatmap_shape)
+        self._data.append(self.__transform_frame(l_data))
+
+        if len(data) >= 2 and data[1] is not None:
+            if len(data[1]) % data_shape == 0 and len(data[1]) != 0:
+                mask_data = np.asarray(data[1][-data_shape:]).reshape(self.sensor_heatmap_shape)
+                self.validity_mask = self.__transform_frame(mask_data)
+                self.validity_mask_available = True
+            else:
+                log.warning(
+                    "Discarded ToF validity mask: length %s is not a multiple of %s",
+                    len(data[1]),
+                    data_shape,
+                )
+                self.validity_mask_available = False
+                self.validity_mask = np.zeros(shape=(self.heatmap_shape), dtype='i')
+        else:
+            self.validity_mask_available = False
+            self.validity_mask = np.zeros(shape=(self.heatmap_shape), dtype='i')
 
     @staticmethod
-    def create_matrix(size):
+    def create_matrix(rows, cols):
         """Create a dict mapping `(row, col)` to a boolean, initialized to False."""
         # Create a matrix of False values
-        matrix = [[False for col in range(size)] for row in range(size)]
+        matrix = [[False for col in range(cols)] for row in range(rows)]
         # Create an empty dictionary
         coord_dict = {}
         # Iterate over the rows and columns of the matrix
-        for row in range(size):
-            for col in range(size):
+        for row in range(rows):
+            for col in range(cols):
                 # Create a dictionary entry for each tuple of coordinates
                 coord_dict[(row, col)] = matrix[row][col]
         # Return the dictionary
@@ -734,7 +833,16 @@ class PlotHeatmapWidget(PlotWidget):
         """Set initial rotation and sync it to the settings panel."""
         self.heatmap_rotation = rotation
         self.rois_frame.rotation_id = rotation
-        self.rois_frame.data_rotation(0)
+        rot_label = rotation % 4
+        if rot_label == 0:
+            self.rois_frame.rot_label.setText("0°")
+        elif rot_label == 1:
+            self.rois_frame.rot_label.setText("90°")
+        elif rot_label == 2:
+            self.rois_frame.rot_label.setText("180°")
+        elif rot_label == 3:
+            self.rois_frame.rot_label.setText("270°")
+        self.__refresh_plot_geometry(clear_rois=True)
 
     def set_default_x_flip(self, x_flip):
         """Set initial horizontal flip and keep the value for future frames."""
@@ -747,14 +855,17 @@ class PlotHeatmapWidget(PlotWidget):
     def data_rotation_callback(self, rot_id):
         """Apply an incoming rotation delta from the settings panel."""
         self.heatmap_rotation += rot_id
+        self.__refresh_plot_geometry(clear_rois=True)
 
     def data_flip_x_callback(self):
         """Toggle horizontal flip upon settings panel change."""
         self.heatmap_is_x_flipped = not self.heatmap_is_x_flipped
+        self.__refresh_plot_geometry(clear_rois=True)
 
     def data_flip_y_callback(self):
         """Toggle vertical flip upon settings panel change."""
         self.heatmap_is_y_flipped = not self.heatmap_is_y_flipped
+        self.__refresh_plot_geometry(clear_rois=True)
 
     def roi_threshold_set_callback(self, roi_id, roi_threshold):
         """Update internal ROI threshold value from the settings panel."""
@@ -772,22 +883,104 @@ class PlotHeatmapWidget(PlotWidget):
         An overlay square is drawn with the ROI color to indicate membership.
         """
         # Get the mouse click position in image coordinates
+        if not self.full_detail_mode:
+            return
+
         pos = self.heatmap_img.mapFromScene(event.scenePos())
         x, y = int(pos.x()), int(pos.y())
 
-        # Get the pixel value at the clicked position
-        # pixel_value = self.data[y, x]
-        # print(f"Clicked on pixel ({x}, {y}) with value {pixel_value}")
+        if (
+            x < 0
+            or y < 0
+            or x >= self.heatmap_shape[0]
+            or y >= self.heatmap_shape[1]
+        ):
+            return
 
-        if self.zones[(x,y)] == False:
-            if (x,y) not in self.rois[self.selected_roi_id]:
+        coord = (x, y)
+
+        # Get the pixel value at the clicked position
+        # pixel_value = self.data[x, y]
+
+        if self.zones.get(coord, False) == False:
+            if coord not in self.rois[self.selected_roi_id]:
                 mask = pg.ImageItem()
                 mask.setImage(np.ones((1, 1, 4)) * np.array(roi_colors_rgba[self.selected_roi_id]))
-                mask.setPos(QPoint(x,y))
-                self.rois[self.selected_roi_id][(x,y)] = mask
-            self.graph_widget.addItem(self.rois[self.selected_roi_id][(x,y)])
-            self.zones[(x,y)] = True
+                mask.setPos(QPoint(x, y))
+                self.rois[self.selected_roi_id][coord] = mask
+            self.graph_widget.addItem(self.rois[self.selected_roi_id][coord])
+            self.zones[coord] = True
         else:
-            self.graph_widget.removeItem(self.rois[self.selected_roi_id][(x,y)])
-            del self.rois[self.selected_roi_id][(x,y)]
-            self.zones[(x,y)] = False
+            self.graph_widget.removeItem(self.rois[self.selected_roi_id][coord])
+            del self.rois[self.selected_roi_id][coord]
+            self.zones[coord] = False
+
+    def set_detail_mode(self, full_detail_mode: bool):
+        """Enable/disable ROI and text-heavy rendering mode."""
+        self.full_detail_mode = full_detail_mode
+        self.rois_frame.set_roi_controls_visible(full_detail_mode)
+
+        if not full_detail_mode:
+            self.__reset_presence_state()
+            self.__clear_rois()
+
+        self.fill_with_text_items()
+
+    def __display_shape_from_transform(self):
+        # pg col-major ImageItem expects [x][y]; transpose sensor (rows, cols) -> (cols, rows)
+        rows, cols = self.sensor_heatmap_shape
+        transposed_shape = (cols, rows)
+        if self.heatmap_rotation % 4 in (1, 3):
+            return (transposed_shape[1], transposed_shape[0])
+        return transposed_shape
+
+    def __transform_frame(self, sensor_frame):
+        # Transpose sensor (rows, cols) frame to pg's col-major [x][y] layout first
+        transformed = sensor_frame.transpose()
+        transformed = np.rot90(transformed, k=-(self.heatmap_rotation % 4))
+        if self.heatmap_is_x_flipped:
+            transformed = np.flip(transformed, axis=0)
+        if self.heatmap_is_y_flipped:
+            transformed = np.flip(transformed, axis=1)
+        return transformed
+
+    def __reset_presence_state(self):
+        if self.global_presence_status:
+            self.global_presence_status = False
+            self.controller.sig_tof_presence_detected.emit(False, "tof_presence")
+
+        for roi_id in range(ROI_NUMBER):
+            if self.is_roi_flashing[roi_id]:
+                self.rois_frame.rois_chips[roi_id].stop_flash()
+                self.is_roi_flashing[roi_id] = False
+                self.controller.sig_tof_presence_detected_in_roi.emit(
+                    False,
+                    roi_id + 1,
+                    f"Target {roi_id + 1}",
+                )
+
+    def __clear_rois(self):
+        for roi_id in range(ROI_NUMBER):
+            for roi_item in self.rois[roi_id].values():
+                self.graph_widget.removeItem(roi_item)
+            self.rois[roi_id] = {}
+            self.underthresh[roi_id] = []
+
+    def __refresh_plot_geometry(self, clear_rois=True):
+        self.heatmap_shape = self.__display_shape_from_transform()
+        self.data = np.zeros(shape=(self.heatmap_shape), dtype='i')
+        self.validity_mask = np.zeros(shape=(self.heatmap_shape), dtype='i')
+        self.validity_mask_available = False
+        self.global_underthresh = np.zeros(shape=(self.heatmap_shape), dtype='i')
+        self.zones = PlotHeatmapWidget.create_matrix(
+            self.heatmap_shape[0], self.heatmap_shape[1]
+        )
+        self._data.clear()
+
+        if clear_rois:
+            self.__clear_rois()
+            self.__reset_presence_state()
+
+        self.heatmap_img.setImage(self.data, levels=self.heatmap_levels or (0, 1))
+        self.graph_widget.getPlotItem()._updateView()
+        self.fill_with_text_items()

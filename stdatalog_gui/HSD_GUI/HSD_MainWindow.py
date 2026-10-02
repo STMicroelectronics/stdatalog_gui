@@ -39,16 +39,16 @@ from stdatalog_gui.STDTDL_MainWindow import STDTDL_MainWindow
 from stdatalog_gui.HSD_GUI.HSD_DeviceConfigPage import HSD_DeviceConfigPage
 from stdatalog_gui.HSD_GUI.HSD_Controller import HSD_Controller
 
-from pkg_resources import resource_filename
-motor_normal_img_path = resource_filename('stdatalog_gui.UI.images', 'Motor_Normal_Class.png')
-motor_anomaly_img_path = resource_filename('stdatalog_gui.UI.images', 'Motor_Anomaly_Class.png')
-motor_vibration_img_path = resource_filename('stdatalog_gui.UI.images', 'Motor_Vibration_Class.png')
-motor_magnet_img_path = resource_filename('stdatalog_gui.UI.images', 'Motor_Magnet_Class.png')
-motor_belt_img_path = resource_filename('stdatalog_gui.UI.images', 'Motor_Belt_Class.png')
-ispu_logo_img_path = resource_filename('stdatalog_gui.UI.images', 'ISPU.png')
-nanoedge_ispu_logo_img_path = resource_filename('stdatalog_gui.UI.images', 'Nanoedge_ISPU.png')
-nanoedge_stm32_logo_img_path = resource_filename('stdatalog_gui.UI.images', 'Nanoedge_STM32.png')
-ai_output_img_path = resource_filename('stdatalog_gui.UI.images', 'AI_Output.png')
+import importlib.resources
+motor_normal_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('Motor_Normal_Class.png'))
+motor_anomaly_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('Motor_Anomaly_Class.png'))
+motor_vibration_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('Motor_Vibration_Class.png'))
+motor_magnet_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('Motor_Magnet_Class.png'))
+motor_belt_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('Motor_Belt_Class.png'))
+ispu_logo_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('ISPU.png'))
+nanoedge_ispu_logo_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('Nanoedge_ISPU.png'))
+nanoedge_stm32_logo_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('Nanoedge_STM32.png'))
+ai_output_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('AI_Output.png'))
 
 import stdatalog_core.HSD_utils.logger as logger
 log = logger.get_logger(__name__)

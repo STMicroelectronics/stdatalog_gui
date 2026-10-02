@@ -44,23 +44,25 @@ from stdatalog_gui.Widgets.ComponentWidget import ComponentWidget
 import stdatalog_gui
 import stdatalog_core.HSD_utils.logger as logger
 import stdatalog_gui.HSD_GUI.UI.images
-from pkg_resources import resource_filename
-key_0_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_0.svg')
-key_1_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_1.svg')
-key_2_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_2.svg')
-key_3_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_3.svg')
-key_4_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_4.svg')
-key_5_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_5.svg')
-key_6_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_6.svg')
-key_7_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_7.svg')
-key_8_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_8.svg')
-key_9_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_9.svg')
-key_a_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_a.svg')
-key_b_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_b.svg')
-key_c_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_c.svg')
-key_d_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_d.svg')
-key_e_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_e.svg')
-key_f_img = resource_filename('stdatalog_gui.HSD_GUI.UI.images', 'key_f.svg')
+
+import importlib.resources
+
+key_0_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_0.svg'))
+key_1_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_1.svg'))
+key_2_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_2.svg'))
+key_3_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_3.svg'))
+key_4_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_4.svg'))
+key_5_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_5.svg'))
+key_6_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_6.svg'))
+key_7_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_7.svg'))
+key_8_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_8.svg'))
+key_9_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_9.svg'))
+key_a_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_a.svg'))
+key_b_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_b.svg'))
+key_c_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_c.svg'))
+key_d_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_d.svg'))
+key_e_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_e.svg'))
+key_f_img = str(importlib.resources.files('stdatalog_gui.HSD_GUI.UI.images').joinpath('key_f.svg'))
 
 # Define a dictionary to map tag indices to corresponding SVG images
 tag_img_map = {

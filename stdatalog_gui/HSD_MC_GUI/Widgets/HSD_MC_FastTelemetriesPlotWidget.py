@@ -170,6 +170,13 @@ class HSD_MC_FastTelemetriesPlotWidget(PlotWidget):
                         data[0][i :: len(self.ft_enabled_list)] * self.plots_params.voltage_scaler
                     ]
                 )
+            
+            elif "SPEED" in ft_enabled_name:
+                self.graph_widgets[ft_enabled_name].add_data(
+                    [
+                        data[0][i :: len(self.ft_enabled_list)] * 60/10
+                    ]
+                )
 
     def get_num_enabled_fast_tele(self):
         """Return the number of fast telemetries currently enabled."""

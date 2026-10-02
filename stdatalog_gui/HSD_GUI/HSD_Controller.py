@@ -39,12 +39,13 @@ import warnings
 import os
 import json
 import copy
+import queue
 from threading import Thread, Event
 from functools import partial
 import sys
 from enum import Enum
 
-from PySide6.QtCore import Qt, Signal, QThread, QObject
+from PySide6.QtCore import Qt, Signal, Slot, QThread, QObject
 from PySide6.QtWidgets import QFileDialog
 
 from stdatalog_pnpl.DTDL.device_template_manager import DeviceCatalogManager
@@ -90,6 +91,100 @@ log_file_name = None
 for handler in log.parent.handlers:
     if hasattr(handler, "baseFilename"):
         log_file_name = os.path.basename(getattr(handler, "baseFilename"))
+
+# Opt-in streaming profiler: set the environment variable HSD_STREAM_PROFILE=1
+# to enable per-component streaming health logs. When disabled (default) the
+# profiler is never instantiated, so the hot acquisition/parse paths pay only a
+# single `if self._profiler is not None` check.
+PROFILE_STREAMING = os.environ.get("HSD_STREAM_PROFILE", "0") == "1"
+# PROFILE_STREAMING = True
+
+
+class _StreamProfiler:
+    """Lightweight, opt-in profiler for per-component streaming health.
+
+    The hot paths only do cheap arithmetic (counters + `time.perf_counter`
+    deltas); the periodic summary is logged off the per-packet path, at most
+    once per `report_period_s`, so logging I/O never throttles streaming.
+
+    Notes
+    -----
+    Counters are updated from two threads (the reader loop and the consumer
+    loop). Updates are simple `+=` on Python scalars and the values are used
+    for diagnostics only, so the occasional torn read across a report boundary
+    is acceptable and intentionally left unsynchronized to keep overhead near
+    zero.
+    """
+
+    def __init__(self, comp_name, report_period_s=2.0):
+        self.comp_name = comp_name
+        self.report_period_s = report_period_s
+        self._t_last_report = time.perf_counter()
+        self._reset()
+
+    def _reset(self):
+        # Reader-thread counters
+        self.reads = 0
+        self.empty_reads = 0
+        self.bytes_drained = 0
+        self.payloads = 0
+        self.max_qdepth = 0
+        self.lost_bytes = 0
+        # Consumer-thread counters
+        self.parse_count = 0
+        self.parse_time_s = 0.0
+        self.parse_max_s = 0.0
+
+    def on_read(self, nbytes):
+        """Record one device read (reader thread). nbytes<=0 means empty read."""
+        self.reads += 1
+        if nbytes > 0:
+            self.bytes_drained += nbytes
+        else:
+            self.empty_reads += 1
+
+    def on_payload(self, qdepth):
+        """Record one payload enqueued and the resulting queue depth (reader)."""
+        self.payloads += 1
+        if qdepth > self.max_qdepth:
+            self.max_qdepth = qdepth
+
+    def on_loss(self, nbytes):
+        """Record detected packet loss in bytes (reader thread)."""
+        self.lost_bytes += nbytes
+
+    def on_parse(self, seconds):
+        """Record one feed_data() parse duration (consumer thread)."""
+        self.parse_count += 1
+        self.parse_time_s += seconds
+        if seconds > self.parse_max_s:
+            self.parse_max_s = seconds
+
+    def maybe_report(self):
+        """Log a summary line if at least `report_period_s` has elapsed."""
+        now = time.perf_counter()
+        elapsed = now - self._t_last_report
+        if elapsed < self.report_period_s:
+            return
+        mbps = (self.bytes_drained * 8) / elapsed / 1e6 if elapsed > 0 else 0.0
+        avg_parse_ms = (self.parse_time_s / self.parse_count * 1e3) if self.parse_count else 0.0
+        parse_duty = (self.parse_time_s / elapsed * 100.0) if elapsed > 0 else 0.0
+        log.info(
+            "[stream-profile %s] %.1f Mb/s | reads=%d (empty=%d) | payloads=%d | "
+            "parse avg=%.3f ms max=%.3f ms duty=%.0f%% | max_qdepth=%d | lost=%d B",
+            self.comp_name,
+            mbps,
+            self.reads,
+            self.empty_reads,
+            self.payloads,
+            avg_parse_ms,
+            self.parse_max_s * 1e3,
+            parse_duty,
+            self.max_qdepth,
+            self.lost_bytes,
+        )
+        self._reset()
+        self._t_last_report = now
 
 
 class AutomodeStatus(Enum):
@@ -253,9 +348,11 @@ class HSD_Controller(STDTDL_Controller):
     sig_hsd_bandwidth_exceeded = Signal(bool)
     sig_lock_start_button = Signal(bool, str)
     sig_streaming_error = Signal(bool, str)
+    sig_plugin_command_response = Signal(str, str, str, object, object)
 
     # dataToolKit
     sig_new_spt_data_ready = Signal(DataClass)
+    sig_plot_data_ready = Signal(DataClass)
 
     sig_key_pressed = Signal(Qt.Key)
     sig_key_released = Signal(Qt.Key)
@@ -439,11 +536,55 @@ class HSD_Controller(STDTDL_Controller):
             self.t0 = 0
             self.prev_cnt = 0
 
+            # Producer/consumer decoupling.
+            # The acquisition (reader) loop in run() only drains the device buffer,
+            # validates packet counters, optionally writes raw bytes to file, and
+            # enqueues raw payloads. A dedicated consumer thread runs the CPU-bound
+            # DataReader.feed_data() parsing + plotting. This keeps the device buffer
+            # drained even when parsing is slow (e.g. at USB Hi-Speed throughput),
+            # avoiding buffer overruns that corrupt the live visualization.
+            self._data_queue = queue.Queue()
+            self._consumer_thread = Thread(
+                target=self._consume_data,
+                name=f"{comp_name}_consumer",
+                daemon=True,
+            )
+
+            # Opt-in streaming profiler (None unless HSD_STREAM_PROFILE=1).
+            self._profiler = _StreamProfiler(comp_name) if PROFILE_STREAMING else None
+
             self.objThread = QThread()
             self.obj = EmptyDataTimer(comp_name)
             self.obj.moveToThread(self.objThread)
             self.obj.timeout_signal.connect(self.raise_empty_data_error)
             self.objThread.started.connect(self.obj.run_wait)
+
+        def _consume_data(self):
+            """
+            Consumer loop: parse and plot enqueued payloads off the reader thread.
+
+            Notes
+            -----
+            Blocks on the queue until a payload (``DataClass``) is available, then
+            delegates to ``DataReader.feed_data``. A ``None`` sentinel terminates the
+            loop. Payloads must be consumed in order (the parser keeps residual-byte
+            state across calls), so items are never dropped.
+            """
+            while True:
+                item = self._data_queue.get()
+                if item is None:
+                    break
+                try:
+                    if self._profiler is not None:
+                        _t0 = time.perf_counter()
+                        self.data_reader.feed_data(item)
+                        self._profiler.on_parse(time.perf_counter() - _t0)
+                    else:
+                        self.data_reader.feed_data(item)
+                except Exception as e:
+                    log.error(f"Error parsing data for {self.comp_name}: {e}")
+                    log.exception(e)
+
 
         def raise_empty_data_error(self):
             """
@@ -476,16 +617,29 @@ class HSD_Controller(STDTDL_Controller):
 
             Notes
             -----
-            - Checks USB packet counters to detect losses and emits errors.
+            - Drains the device buffer and validates USB packet counters to detect
+              losses, emitting errors when needed.
             - Writes raw bytes to `sensor_data_file` when configured.
+            - Enqueues payloads to the consumer thread, which performs the parsing
+              and plotting, so a slow parser cannot stall the buffer drain.
+            - Uses an adaptive poll: no idle wait while data is flowing (drain as
+              fast as possible) and a short back-off when the device returns nothing.
             - Starts an empty-data timer when the device returns no data.
             """
-            while not self.stopped.wait(0.02):
-                # while not self.stopped.wait(1):
+            self._consumer_thread.start()
+            # Adaptive poll interval: 0 while data flows (drain aggressively), a
+            # small back-off when idle to avoid busy-spinning the CPU.
+            idle_backoff = 0.005
+            poll_timeout = 0.002
+            while not self.stopped.wait(poll_timeout):
                 sensor_data = self.hsd_link.get_sensor_data(self.d_id, self.comp_name)
                 if sensor_data is not None:
                     if self.objThread.isRunning():
                         self.obj.interrupt_event.set()
+                    # Data is flowing: keep draining without sleeping.
+                    poll_timeout = 0
+                    if self._profiler is not None:
+                        self._profiler.on_read(len(sensor_data[1]))
                     nof_usb_packet = len(sensor_data[1]) / (self.usb_dps + 4)
                     for p in range(int(nof_usb_packet)):
                         curr_cnt = struct.unpack(
@@ -507,9 +661,12 @@ class HSD_Controller(STDTDL_Controller):
                             if self.sig_streaming_error is not None:
                                 self.sig_streaming_error.emit(True, error_msg)
                             log.error(error_msg)
+                            if self._profiler is not None:
+                                self._profiler.on_loss(diff)
                         self.prev_cnt = curr_cnt
 
-                        self.data_reader.feed_data(
+                        # Hand the raw payload to the consumer thread for parsing.
+                        self._data_queue.put(
                             DataClass(
                                 self.comp_name,
                                 sensor_data[1][
@@ -517,10 +674,21 @@ class HSD_Controller(STDTDL_Controller):
                                 ],
                             )
                         )
+                        if self._profiler is not None:
+                            self._profiler.on_payload(self._data_queue.qsize())
                     if self.sensor_data_file is not None:
                         self.sensor_data_file.write(sensor_data[1])
                 else:
+                    # No data available: back off to avoid busy-spinning the CPU.
+                    poll_timeout = idle_backoff
+                    if self._profiler is not None:
+                        self._profiler.on_read(0)
                     self.objThread.start()
+                if self._profiler is not None:
+                    self._profiler.maybe_report()
+            # Stop requested: drain the consumer queue and join it.
+            self._data_queue.put(None)
+            self._consumer_thread.join()
             if self.objThread.isRunning():
                 self.obj.interrupt_event.set()
                 self.objThread.quit()
@@ -677,6 +845,7 @@ class HSD_Controller(STDTDL_Controller):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.sig_plot_data_ready.connect(self.add_data_to_a_plot, Qt.ConnectionType.QueuedConnection)
         # HSD
         self.hsd = None
         self.hsd_link = None
@@ -1472,8 +1641,21 @@ class HSD_Controller(STDTDL_Controller):
                     unit = self.__get_audio_sensor_unit(comp_status_value, comp_interface)
                     return SensorAudioPlotParams(comp_name, enabled, odr, dimension, unit)
                 elif s_category == DTDLUtils.SensorCategoryEnum.ISENSOR_CLASS_RANGING.value:
-                    resolution = comp_status_value.get("resolution")
+                    resolution = self.__get_ranging_sensor_resolution(comp_status_value, comp_interface)
                     output_format = comp_status_value.get("output_format")
+                    if isinstance(output_format, str):
+                        from stdatalog_core.HSD.output_format import get_compiled
+
+                        if not resolution:
+                            raise ValueError(f"Missing resolution for {output_format!r}")
+                        columns, rows = (int(value) for value in resolution.lower().split("x"))
+                        compiled = get_compiled(output_format, (rows, columns))
+                        byte_count = dimension * TypeConversion.check_type_length(comp_status_value["data_type"])
+                        if compiled.payload_size_bytes != byte_count:
+                            raise ValueError(
+                                f"{output_format!r} expects {compiled.payload_size_bytes} bytes, "
+                                f"{comp_name} declares {byte_count}"
+                            )
                     return SensorRangingPlotParams(
                         comp_name, enabled, dimension, resolution, output_format
                     )
@@ -1916,10 +2098,15 @@ class HSD_Controller(STDTDL_Controller):
                 if s_category is not None:
                     if s_category == DTDLUtils.SensorCategoryEnum.ISENSOR_CLASS_RANGING.value:
                         raw_flat_data = True
+                        if isinstance(comp_status.get("output_format"), str):
+                            from stdatalog_core.HSD.output_format import load_schema
+
+                            load_schema(comp_status["output_format"])
+                            interleaved_data = False
 
                 dr = HSD_Controller.DataReader(
                     self,
-                    self.add_data_to_a_plot,
+                    self._queue_plot_data,
                     comp_name,
                     spts,
                     dimensions,
@@ -2013,12 +2200,18 @@ class HSD_Controller(STDTDL_Controller):
             if s_category is not None:
                 if s_category == DTDLUtils.SensorCategoryEnum.ISENSOR_CLASS_RANGING.value:
                     raw_flat_data = True
+                    output_format = comp_status.get("output_format")
+                    if output_format is not None and isinstance(output_format, str):
+                        interleaved_data = False
+                        from stdatalog_core.HSD.output_format import load_schema
+
+                        load_schema(output_format)
                 create_thread = True
 
             if create_thread == True:
                 dr = HSD_Controller.DataReader(
                     self,
-                    self.add_data_to_a_plot,
+                    self._queue_plot_data,
                     comp_name,
                     spts,
                     dimensions,
@@ -2093,7 +2286,7 @@ class HSD_Controller(STDTDL_Controller):
                 data_format = s_plot.data_format
 
                 dr = DataReader(
-                    self.add_data_to_a_plot,
+                    self._queue_plot_data,
                     s_plot.comp_name,
                     spts,
                     dimensions,
@@ -2429,6 +2622,11 @@ class HSD_Controller(STDTDL_Controller):
         else:
             log.warning(f"{comp_name} is not in plot widget list yet")
 
+    def _queue_plot_data(self, data: DataClass):
+        payload = data.data.copy() if isinstance(data.data, dict) else data.data
+        self.sig_plot_data_ready.emit(DataClass(data.comp_name, payload))
+
+    @Slot(DataClass)
     def add_data_to_a_plot(self, data: DataClass):
         """
         Append incoming `DataClass` payload to the corresponding plot widget.
@@ -2560,6 +2758,43 @@ class HSD_Controller(STDTDL_Controller):
         response = self.hsd_link.send_command(self.device_id, json_command)
         if response is not None:
             self.sig_pnpl_response_received.emit(json_command, response)
+        return response
+
+    def send_plugin_command(self, plugin_id, plugin_name, request_id, json_command):
+        """Send a PNPL command on behalf of a plugin and emit plugin metadata.
+
+        Parameters
+        ----------
+        plugin_id : str
+            Runtime identifier assigned by the plugin pipeline.
+        plugin_name : str
+            Plugin module/class logical name.
+        request_id : str
+            Correlation id generated by the plugin command context.
+        json_command : dict
+            PNPL command payload requested by the plugin.
+
+        Returns
+        -------
+        dict | None
+            Response dictionary if available.
+        """
+        log.info(
+            "Plugin command received | plugin_id=%s plugin_name=%s request_id=%s payload=%s",
+            plugin_id,
+            plugin_name,
+            request_id,
+            json_command,
+        )
+
+        response = self.send_command(json_command)
+        self.sig_plugin_command_response.emit(
+            plugin_id,
+            plugin_name,
+            request_id,
+            json_command,
+            response,
+        )
         return response
 
     def save_config(self, on_pc: bool, on_sd: bool):

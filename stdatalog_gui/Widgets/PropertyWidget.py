@@ -60,8 +60,9 @@ from stdatalog_pnpl.DTDL.dtdl_utils import UnitMap
 from stdatalog_pnpl.DTDL.device_template_model import Content, ContentSchema, DisplayName
 
 import stdatalog_gui.UI.icons #NOTE don't delete this! it is used from resource_filename
-from pkg_resources import resource_filename
-info_img_path = resource_filename('stdatalog_gui.UI.icons', 'outline_info_white_18dp.png')
+import importlib.resources
+
+info_img_path = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('outline_info_white_18dp.png'))
 
 class CharCounterValidator(QValidator):
     """Validator enforcing character count boundaries for string inputs.

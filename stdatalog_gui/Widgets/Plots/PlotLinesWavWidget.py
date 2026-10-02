@@ -21,13 +21,15 @@ Plot lines widget extension with WAV conversion and playback controls.
 This module adds a side panel to `PlotLinesWidget` for microphones to convert
 acquired data to a WAV file and play it back. It coordinates UI state with
 logging status, invokes conversion via the controller, shows a waiting dialog,
-and streams audio using `pyaudio` with a progress bar.
+and streams audio using Qt Multimedia (`QAudioSink`) with a progress bar.
 """
 
 import wave
 
-import pyaudio
-from PySide6.QtCore import Slot
+import numpy as np
+import shiboken6
+from PySide6.QtCore import QBuffer, QIODevice, Slot
+from PySide6.QtMultimedia import QAudio, QAudioFormat, QAudioSink, QMediaDevices
 from PySide6.QtWidgets import QApplication, QFrame, QPushButton, QProgressBar, QSpinBox
 
 from stdatalog_gui.UI.styles import STDTDL_PushButton
@@ -144,16 +146,18 @@ class PlotLinesWavWidget(PlotLinesWidget):
             print(f"Sensor {self.comp_name} is logging via {if_str}: {status}")
             if status:
                 if "_mic" in self.comp_name:  # or "_acc" in self.comp_name:
-                    self.pushButton_convert_wav.setStyleSheet(STDTDL_PushButton.valid)
-                    self.convert_wav_frame.setEnabled(False)
-                    self.playing_wav_frame.setEnabled(False)
-                    self.wav_progress_bar.setValue(0)
+                    if shiboken6.isValid(self.convert_wav_frame) and shiboken6.isValid(self.playing_wav_frame):
+                        self.pushButton_convert_wav.setStyleSheet(STDTDL_PushButton.valid)
+                        self.convert_wav_frame.setEnabled(False)
+                        self.playing_wav_frame.setEnabled(False)
+                        self.wav_progress_bar.setValue(0)
                 self.update_plot_characteristics(self.plot_params)
                 self.timer.start(self.timer_interval_ms)
             else:
                 self.timer.stop()
                 if "_mic" in self.comp_name:  # or "_acc" in self.comp_name:
-                    self.convert_wav_frame.setEnabled(True)
+                    if shiboken6.isValid(self.convert_wav_frame):
+                        self.convert_wav_frame.setEnabled(True)
         else: # interface == 0
             print(f"Component {self.comp_display_name} is logging on SD Card: {status}")
 
@@ -161,6 +165,32 @@ class PlotLinesWavWidget(PlotLinesWidget):
     def s_is_detecting(self, status:bool):
         """Mirror detection status to logging to reuse the same pipeline."""
         self.s_is_logging(status, 1)
+
+    @staticmethod
+    def __24bit_to_32bit(data):
+        """Widen packed little-endian 24-bit PCM samples to signed 32-bit PCM.
+
+        QAudioFormat has no 24-bit sample format, so each 24-bit sample is
+        sign-extended and left-shifted into the 32-bit range.
+
+        Parameters
+        ----------
+        data : bytes
+            Raw 24-bit PCM samples (3 bytes/sample, length multiple of 3).
+
+        Returns
+        -------
+        bytes
+            Equivalent signed 32-bit PCM samples (4 bytes/sample).
+        """
+        samples = np.frombuffer(data, dtype=np.uint8).reshape(-1, 3)
+        samples32 = (
+            samples[:, 0].astype(np.int32)
+            | (samples[:, 1].astype(np.int32) << 8)
+            | (samples[:, 2].astype(np.int32) << 16)
+        )
+        samples32[samples32 & 0x800000 != 0] -= 0x1000000
+        return (samples32 << 8).astype("<i4").tobytes()
 
     def __play_wav_file(self, filepath):
         """Stream a WAV file to the default audio output, updating the progress.
@@ -172,43 +202,54 @@ class PlotLinesWavWidget(PlotLinesWidget):
         """
         self.pushButton_stop_wav.setEnabled(True)
         self.pushButton_play_wav.setEnabled(False)
-        #define stream chunk
-        chunk = 1024
         #open a wav file
         f = wave.open(filepath,"rb")
 
-        wav_max_for_progress_bar = int(f.getnframes()/chunk)*chunk
-        wav_data_cnt = 0
-        self.wav_progress_bar.setMaximum(wav_max_for_progress_bar)
-
-        #instantiate PyAudio
-        p = pyaudio.PyAudio()
-        #open stream
-        stream = p.open(
-            format=p.get_format_from_width(f.getsampwidth()),
-            channels=f.getnchannels(),
-            rate=f.getframerate(),
-            output=True,
+        #map WAV sample width (bytes) to a Qt Multimedia sample format
+        #24-bit has no native QAudioFormat, so it's widened to 32-bit on the fly
+        sample_width = f.getsampwidth()
+        is_24bit = sample_width == 3
+        sample_format_map = {
+            1: QAudioFormat.SampleFormat.UInt8,
+            2: QAudioFormat.SampleFormat.Int16,
+            3: QAudioFormat.SampleFormat.Int32,
+            4: QAudioFormat.SampleFormat.Int32,
+        }
+        audio_format = QAudioFormat()
+        audio_format.setSampleRate(f.getframerate())
+        audio_format.setChannelCount(f.getnchannels())
+        audio_format.setSampleFormat(
+            sample_format_map.get(sample_width, QAudioFormat.SampleFormat.Int16)
         )
-        #read data
-        data = f.readframes(chunk)
-        #play stream
-        while data and self.stop_stream == False:
-            stream.write(data)
-            data = f.readframes(chunk)
-            wav_data_cnt += chunk
-            self.wav_progress_bar.setValue(wav_data_cnt)
+
+        #read the whole clip upfront so Qt can pull data at its own pace
+        raw_data = f.readframes(f.getnframes())
+        f.close()
+        pcm_data = self.__24bit_to_32bit(raw_data) if is_24bit else raw_data
+
+        self.wav_progress_bar.setMaximum(100)
+        #buffer must be kept alive on self: QAudioSink pulls from it asynchronously
+        self.__playback_buffer = QBuffer()
+        self.__playback_buffer.setData(pcm_data)
+        self.__playback_buffer.open(QIODevice.OpenModeFlag.ReadOnly)
+
+        self.__audio_sink = QAudioSink(QMediaDevices.defaultAudioOutput(), audio_format)
+        self.__audio_sink.start(self.__playback_buffer)
+
+        #poll until playback drains or the user stops it
+        while self.__audio_sink.state() != QAudio.State.StoppedState and self.stop_stream == False:
+            progress = int(self.__playback_buffer.pos() * 100 / max(self.__playback_buffer.size(), 1))
+            self.wav_progress_bar.setValue(progress)
             self.app_qt.processEvents()
+            if self.__audio_sink.state() == QAudio.State.IdleState:
+                break
 
         self.pushButton_play_wav.setEnabled(True)
         self.pushButton_stop_wav.setEnabled(False)
-        #stop stream
-        stream.stop_stream()
-        stream.close()
+        self.__audio_sink.stop()
+        self.__playback_buffer.close()
+        self.wav_progress_bar.setValue(0)
         self.stop_stream = False
-
-        #close PyAudio
-        p.terminate()
 
     def __stop_wav_file(self, filepath):
         """Stop the current playback loop and reset the progress bar.

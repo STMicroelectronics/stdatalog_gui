@@ -53,7 +53,7 @@ from stdatalog_gui.STDTDL_Controller import ComponentType
 
 import stdatalog_gui.UI.images #NOTE don't delete this! it is used from resource_filename (@row 35)
 
-from pkg_resources import resource_filename
+import importlib.resources
 
 import stdatalog_core.HSD_utils.logger as logger
 from stdatalog_pnpl.PnPLCmd import PnPLCMDManager
@@ -151,7 +151,7 @@ class STDTDL_DeviceConfigPage():
 
         self.comp_id = 0
 
-        self.st_logo_img_path = resource_filename('stdatalog_gui.UI.images', 'st_logo.png')
+        self.st_logo_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('st_logo.png'))
         self.st_logo_image = QLabel()
 
     def remove_comp_widget(self, name):

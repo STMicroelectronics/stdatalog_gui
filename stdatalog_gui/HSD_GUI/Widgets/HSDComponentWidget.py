@@ -34,7 +34,7 @@ Highlights
 
 Notes
 -----
-- Icons are loaded from package resources using `pkg_resources.resource_filename`.
+- Icons are loaded from package resources using `importlib.resources.files`.
     Do not remove the `stdatalog_gui.UI.icons` import: it is required to make the
     icons available as packaged resources.
 """
@@ -45,18 +45,16 @@ from stdatalog_gui.UI.styles import STDTDL_LineEdit
 from stdatalog_gui.Widgets.ComponentWidget import ComponentWidget
 from stdatalog_gui.Widgets.PropertyWidget import PropertyWidget
 # NOTE: don't delete this import! It is required so that icons are packaged and
-# accessible via `pkg_resources.resource_filename` used below.
+# accessible via `importlib.resources.files` used below.
 import stdatalog_gui.UI.icons
-from pkg_resources import resource_filename
+import importlib.resources
 
-info_img_path_valid = resource_filename(
-    "stdatalog_gui.UI.icons",
-    "outline_info_white_18dp.png",
-)
-info_img_path_invalid = resource_filename(
-    "stdatalog_gui.UI.icons",
-    "info_18dp_FF0000.svg",
-)
+info_img_path_valid = str(importlib.resources.files(
+    "stdatalog_gui.UI.icons"
+).joinpath("outline_info_white_18dp.png"))
+info_img_path_invalid = str(importlib.resources.files(
+    "stdatalog_gui.UI.icons"
+).joinpath("info_18dp_FF0000.svg"))
 
 DEVICE_INFORMATION_UNIT_MAP = {
     "Bytes": "B",

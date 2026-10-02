@@ -1,25 +1,7 @@
-stdatalog_pnpl==1.4.0
-stdatalog_core==1.4.0
-stdatalog_dtk==1.4.0
-numpy==2.3.4
-pyqtgraph==0.13.7
-setuptools<81
-pillow==12.2.0
-
-[:platform_system != "Linux"]
-pyaudio==0.2.14
-
-[:platform_system == "Darwin" and platform_machine == "arm64"]
-PySide6==6.9.0
-
-[:platform_system == "Darwin" and platform_machine == "x86_64"]
-PySide6==6.7.3
-
-[:platform_system == "Linux" and platform_machine != "aarch64"]
-PySide6==6.10.0
-
-[:platform_system == "Linux" and platform_machine == "aarch64"]
-PySide6==6.8.0.2
-
-[:platform_system == "Windows"]
-PySide6==6.10.0
+stdatalog_pnpl==1.5.0
+stdatalog_core==1.5.0
+stdatalog_dtk==1.5.0
+numpy==2.5.2
+pyqtgraph==0.14.0
+pytz==2026.3.post1
+PySide6==6.11.2

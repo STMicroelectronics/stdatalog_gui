@@ -27,7 +27,36 @@ The package is part of the **[STDATALOG-PYSDK](https://github.com/STMicroelectro
 # Update History
 
 ::: {.collapse}
-<input type="checkbox" id="collapse-section6" checked aria-hidden="true">
+<input type="checkbox" id="collapse-section7" checked aria-hidden="true">
+<label for="collapse-section7" aria-hidden="true">v1.5.0 / 18-Sep-26</label>
+<div>
+
+
+## Main Changes
+
+### Maintenance Release
+
+- Updated Motor Control widgets:
+  - Added possibility to plot speed as fast telemetries
+  - Made motor speed text editable
+- Refactored image path handling to use importlib.resources for improved resource management
+- Extended support to VL53L9CX in ToF widgets, with heatmap and distance matrix rotation for rectangular shape also
+- Optimized HSD_Controller: 
+  - Implemented producer/consumer decoupling
+  - Added streamProfiler
+- Added support to Python 3.14
+- Updated requirements
+  - Use more recent versions of packages dependencies
+  - Remove pyaudio: using instead PySide6 already available
+  - Remove pillow: not used by stdatalog_gui
+  - Remove setuptools: dependency already included in stdatalog_core
+
+
+</div>
+:::
+
+::: {.collapse}
+<input type="checkbox" id="collapse-section6" aria-hidden="true">
 <label for="collapse-section6" aria-hidden="true">v1.4.0 / 15-May-26</label>
 <div>
 

@@ -40,24 +40,22 @@ from PySide6.QtWidgets import QPushButton, QFileDialog, QFrame
 import numpy as np
 import pyqtgraph as pg
 
-import stdatalog_gui.UI.icons #do not remove this import. It is used by pkg_resources
+import stdatalog_gui.UI.icons #do not remove this import. It is used by importlib.resources.files
 from stdatalog_gui.UI.styles import STDTDL_PushButton
 from stdatalog_gui.Utils.PlotParams import PlotParams, SensorISPUPlotParams
 from stdatalog_gui.Widgets.Plots.PlotWidget import PlotLabel
 from stdatalog_gui.Widgets.Plots.PlotLinesWavWidget import PlotLinesWavWidget
 
-from pkg_resources import resource_filename
+import importlib.resources
 
 from stdatalog_core.HSD.utils.type_conversion import TypeConversion
 
-ispu_out_fmt_ok_status_path = resource_filename(
-    'stdatalog_gui.UI.icons',
-    'outline_done_outline_white_18dp.png'
-)
-ispu_out_fmt_ko_status_path = resource_filename(
-    'stdatalog_gui.UI.icons',
-    'outline_close_white_36dp.png'
-)
+ispu_out_fmt_ok_status_path = str(importlib.resources.files(
+    'stdatalog_gui.UI.icons'
+).joinpath('outline_done_outline_white_18dp.png'))
+ispu_out_fmt_ko_status_path = str(importlib.resources.files(
+    'stdatalog_gui.UI.icons'
+).joinpath('outline_close_white_36dp.png'))
 
 import stdatalog_core.HSD_utils.logger as logger
 log = logger.get_logger(__name__)
@@ -216,6 +214,7 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
         if self.out_fmt_valid:
             icon  = QPixmap(ispu_out_fmt_ok_status_path)
             self.__apply_ispu_output_format(self.controller.ispu_output_format["output"])
+            self.__refresh_ispu_legend()
         else:
             icon  = QPixmap(ispu_out_fmt_ko_status_path)
         self.out_fmt_status.setIcon(icon)
@@ -243,14 +242,23 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
         filepath = QFileDialog.getOpenFileName(filter=json_filter)
         if filepath[0]:  # Check if a file was actually selected (not cancelled)
             self.__load_ispu_out_fmt(filepath[0])
-            if self.ispu_output_format is not None:
-                for id in range(len(self.legend.items)):
-                    if id != 0:
-                        self.legend.removeItem(self.graph_curves[id])  #
-                        self.legend.layout.removeAt(id)
-                self.legend.addItem(pg.PlotDataItem(pen=pg.mkPen(0, 0, 0, 0)), "")
-                for i, of in enumerate(self.ispu_output_format):
-                    self.legend.addItem(self.graph_curves[i], of.get("name", ""))
+
+    def __refresh_ispu_legend(self):
+        """
+        Rebuild the legend entries from the currently loaded ISPU output format.
+
+        All previously added curve entries are removed first, so that outputs coming
+        from a former configuration do not survive a configuration reload. The first
+        legend item (crosshair coordinates) is always preserved.
+        """
+        if self.ispu_output_format is None:
+            return
+        for sample, _label in list(self.legend.items)[1:]:
+            self.legend.removeItem(sample.item)
+        self.legend.addItem(pg.PlotDataItem(pen=pg.mkPen(0, 0, 0, 0)), "")
+        for i, of in enumerate(self.ispu_output_format):
+            if i in self.graph_curves:
+                self.legend.addItem(self.graph_curves[i], of.get("name", ""))
 
     @Slot()
     def clicked_out_fmt_plot_settings_button(self):
@@ -362,6 +370,17 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
             self.ispu_out_fmt_char.append(self.controller.get_out_fmt_char(output["type"]))
         self.n_curves = len(outputs)
         self.out_fmt_valid = True
+        # Rebuild buffers/curves right away, so stale traces of the previous
+        # configuration are dropped instead of staying frozen on the plot.
+        self.plot_params = SensorISPUPlotParams(
+            self.comp_name,
+            self.plot_params.enabled,
+            self.n_curves,
+            outputs,
+            self.plot_params.time_window,
+        )
+        self.current_x = 0
+        self.update_plot_characteristics(self.plot_params)
 
     def __apply_mlc_output_format(self, outputs):
         """Update curve count and legend labels from MLC outputs metadata."""
@@ -376,8 +395,8 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
             curve.setVisible(curve_id < self.plot_params.dimension)
 
         self.time_legend_shown = False
-        for curve in self.graph_curves.values():
-            self.legend.removeItem(curve)
+        for sample, _label in list(self.legend.items)[1:]:
+            self.legend.removeItem(sample.item)
         self.__add_time_legend()
         self.app.processEvents()
 
@@ -582,14 +601,6 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
                 self.__load_ispu_ucf(ucf_json_path)
                 if output_json_path:
                     self.__load_ispu_out_fmt(output_json_path)
-                if self.ispu_output_format is not None:
-                    for id in range(len(self.legend.items)):
-                        if id != 0:
-                            self.legend.removeItem(self.graph_curves[id])  #
-                            self.legend.layout.removeAt(id)
-                    self.legend.addItem(pg.PlotDataItem(pen=pg.mkPen(0, 0, 0, 0)), "")
-                    for i, of in enumerate(self.ispu_output_format):
-                        self.legend.addItem(self.graph_curves[i], of.get("name", ""))
             elif ucf_json_path.lower().endswith(".json"):
                 self.__load_ispu_json(ucf_json_path)
                 outputs = self.__load_ispu_json_outputs(ucf_json_path)
@@ -599,13 +610,7 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
                     return
 
                 self.__apply_ispu_output_format(outputs)
-                for id in range(len(self.legend.items)):
-                    if id != 0:
-                        self.legend.removeItem(self.graph_curves[id])
-                        self.legend.layout.removeAt(id)
-                self.legend.addItem(pg.PlotDataItem(pen=pg.mkPen(0, 0, 0, 0)), "")
-                for i, of in enumerate(self.ispu_output_format):
-                    self.legend.addItem(self.graph_curves[i], of.get("name", ""))
+                self.__refresh_ispu_legend()
         else:
             log.warning(f"Received ISPU config loaded signal for {comp_name},"
                     f"but current component is {self.comp_name}. Ignoring.")
@@ -682,11 +687,15 @@ class HSDPlotLinesWidget(PlotLinesWavWidget):
             Parameters providing ODR and time window for FFT computations.
         """
         self.x_data_fft = np.fft.rfftfreq(self.FFT_N, 1/plot_params.odr)
+        for i in [c for c in self.fft_graph_curves if c >= self.plot_params.dimension]:
+            self.graph_widget.removeItem(self.fft_graph_curves[i])
+            del self.fft_graph_curves[i]
+            self.y_queue_fft.pop(i, None)
         for i in range(self.plot_params.dimension):
             self._data[i] = deque(maxlen=200000)
             self.y_queue_fft[i] = deque(maxlen=int(self.FFT_N / 2) + 1)
             self.y_queue_fft[i].extend(np.zeros(int(self.FFT_N / 2) + 1))
-            if len(self.fft_graph_curves) < self.plot_params.dimension:
+            if i not in self.fft_graph_curves:
                 self.fft_graph_curves[i] = self.graph_widget.plot()
                 self.fft_graph_curves[i] = pg.PlotDataItem(
                     pen={

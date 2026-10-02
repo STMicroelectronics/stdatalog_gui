@@ -141,7 +141,7 @@ class HSD_MC_Controller(HSD_Controller):
 
                     dr = HSD_Controller.DataReader(
                         self,
-                        self.add_data_to_a_plot,
+                        self._queue_plot_data,
                         s_plot.comp_name,
                         spts,
                         dimensions,

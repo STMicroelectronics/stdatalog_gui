@@ -28,13 +28,15 @@ Design Notes
 - Uses 100-character wrapping for readability and consistency.
 - No behavioral changes; only documentation and stylistic consistency.
 """
+import importlib.resources
+
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QProgressDialog
 from PySide6.QtGui import QMovie
 from PySide6.QtCore import Qt, QSize
 
 import stdatalog_gui.UI.images
-from pkg_resources import resource_filename
-loading_gif_path = resource_filename('stdatalog_gui.UI.images', 'loading_icon.gif')
+
+loading_gif_path = importlib.resources.files('stdatalog_gui.UI.images').joinpath('loading_icon.gif')
 
 class StaticLoadingWindow:
     """Modal, non-closable dialog with a static message.

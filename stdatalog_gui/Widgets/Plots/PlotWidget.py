@@ -29,10 +29,11 @@ This module defines reusable plot components used by all specific plot widgets:
 
 from abc import abstractmethod
 import os
+import sys
 
-from PySide6.QtCore import Qt, Slot, QTimer
-from PySide6.QtGui import QPainter, QFont, QScreen, QPixmap, QIcon
-from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QPushButton, QSizePolicy
+from PySide6.QtCore import Qt, Slot, QTimer, QRectF
+from PySide6.QtGui import QPainter, QFont, QScreen, QPixmap, QIcon, QImage
+from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QBoxLayout, QGridLayout, QStackedLayout, QPushButton, QSizePolicy
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication
 from PySide6.QtDesigner import QPyDesignerCustomWidgetCollection
@@ -42,9 +43,10 @@ import pyqtgraph as pg
 import stdatalog_gui
 
 import stdatalog_gui.UI.icons
-from pkg_resources import resource_filename
-icon_pop_in_img_path = resource_filename('stdatalog_gui.UI.icons', 'pop-in_18dp_E8EAED.svg')
-icon_pop_out_img_path = resource_filename('stdatalog_gui.UI.icons', 'pop-out_18dp_E8EAED.svg')
+
+import importlib.resources
+icon_pop_in_img_path = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('pop-in_18dp_E8EAED.svg'))
+icon_pop_out_img_path = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('pop-out_18dp_E8EAED.svg'))
 
 class PlotLabel(QWidget):
     """Paint a vertical label string in the plot's left area.
@@ -89,6 +91,25 @@ class CustomPGPlotWidget(pg.PlotWidget):
     def __init__(self, parent=None, background='default', plotItem=None, **kargs):
         super().__init__(parent, background, plotItem, **kargs)
         self.parent = parent
+        self._raster_frame = None
+
+    def paintEvent(self, event):
+        if sys.platform != 'darwin' or QApplication.platformName() != 'cocoa':
+            return super().paintEvent(event)
+
+        viewport = self.viewport()
+        pixel_ratio = viewport.devicePixelRatioF()
+        frame_size = viewport.size() * pixel_ratio
+        if self._raster_frame is None or self._raster_frame.size() != frame_size:
+            self._raster_frame = QImage(frame_size, QImage.Format.Format_ARGB32_Premultiplied)
+            self._raster_frame.setDevicePixelRatio(pixel_ratio)
+        self._raster_frame.fill(self.backgroundBrush().color())
+        painter = QPainter(self._raster_frame)
+        self.scene().render(painter, QRectF(viewport.rect()), self.sceneRect())
+        painter.end()
+        painter = QPainter(viewport)
+        painter.drawImage(0, 0, self._raster_frame)
+        painter.end()
 
     def wheelEvent(self, ev):
         """Allow wheel zoom when docked+Ctrl, else delegate to parent handler."""
@@ -291,6 +312,11 @@ class PlotWidget(QWidget):
         self.timer.setTimerType(Qt.PreciseTimer)
         # the update function keeps getting called at intervals
         self.timer.timeout.connect(self.update_plot)
+        if sys.platform == 'darwin' and QApplication.platformName() == 'cocoa':
+            self.timer.timeout.connect(self._update_cocoa_viewport)
+
+    def _update_cocoa_viewport(self):
+        self.graph_widget.viewport().update()
 
     @Slot()
     def clicked_pop_out_button(self):
@@ -331,14 +357,21 @@ class PlotWidget(QWidget):
             The close event triggering this method.
             (Unused parameter, required by signature.)
         """
-        _ = event # Unused parameter
-        self.pop_in_widget()
-        self.is_docked = True
+        if not self.is_docked:
+            self.pop_in_widget()
+            self.is_docked = True
+            event.ignore()
+            return
+        super().closeEvent(event)
 
     def pop_out_widget(self):
         """Undock the widget and show it as a separate dialog window."""
         self.pushButton_pop_out.setIcon(self.icon_pop_in)
-        self.original_idx = self.parent.layout().indexOf(self)
+        self._dock_parent = self.parentWidget()
+        self._dock_layout = self._dock_parent.layout()
+        self.original_idx = self._dock_layout.indexOf(self)
+        if isinstance(self._dock_layout, QGridLayout) and self.original_idx >= 0:
+            self._dock_grid_position = self._dock_layout.getItemPosition(self.original_idx)
         self.setWindowFlags(
             Qt.Dialog | Qt.WindowMaximizeButtonHint | Qt.WindowMinimizeButtonHint
         )
@@ -351,5 +384,12 @@ class PlotWidget(QWidget):
     def pop_in_widget(self):
         """Redock the widget into the parent layout at its original position."""
         self.pushButton_pop_out.setIcon(self.icon_pop_out)
-        self.setWindowFlags(Qt.Widget)
-        self.parent.layout().insertWidget(self.original_idx, self)
+        self.setParent(self._dock_parent, Qt.Widget)
+        if self._dock_layout.indexOf(self) < 0:
+            if isinstance(self._dock_layout, QGridLayout):
+                self._dock_layout.addWidget(self, *self._dock_grid_position)
+            elif isinstance(self._dock_layout, (QBoxLayout, QStackedLayout)):
+                self._dock_layout.insertWidget(self.original_idx, self)
+            else:
+                self._dock_layout.addWidget(self)
+        self.show()

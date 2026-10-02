@@ -70,7 +70,7 @@ import stdatalog_gui.UI.images #NOTE don't delete this! it is used from resource
 from stdatalog_gui.UI.styles import STDTDL_Chip, STDTDL_PushButton
 from stdatalog_gui.Widgets.LoadingWindow import StaticLoadingWindow, WaitingDialog
 
-from pkg_resources import resource_filename
+import importlib.resources
 
 from stdatalog_gui.Widgets.PluginListItemWidget import PluginListItemWidget
 from stdatalog_dtk.HSD_DataToolkit_Pipeline import HSD_DataToolkit_Pipeline
@@ -80,103 +80,81 @@ import stdatalog_core.HSD_utils.staiotcraft_dependencies.p311
 import stdatalog_core.HSD_utils.staiotcraft_dependencies.p312
 import stdatalog_core.HSD_utils.staiotcraft_dependencies.p313
 
-oidc_client_whl_path_310 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310',
-    'oidc_client-0.2.6-py3-none-any.whl',
-)
-vespucci_python_utils_whl_path_310 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310',
-    'vespucci_python_utils-0.1.2-py3-none-any.whl',
-)
-dataset_models_whl_path_310 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310',
-    'dataset_models-0.1.7-py3-none-any.whl',
-)
-dataset_api_client_whl_path_310 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310',
-    'dataset_api_client-0.1.5-py3-none-any.whl',
-)
-staiotcraft_sdk_whl_path_310 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310',
-    'staiotcraft_sdk-1.1.0-py3-none-any.whl',
-)
+oidc_client_whl_path_310 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310'
+).joinpath('oidc_client-0.2.6-py3-none-any.whl')
+vespucci_python_utils_whl_path_310 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310'
+).joinpath('vespucci_python_utils-0.1.2-py3-none-any.whl')
+dataset_models_whl_path_310 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310'
+).joinpath('dataset_models-0.1.7-py3-none-any.whl')
+dataset_api_client_whl_path_310 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310'
+).joinpath('dataset_api_client-0.1.5-py3-none-any.whl')
+staiotcraft_sdk_whl_path_310 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p310'
+).joinpath('staiotcraft_sdk-1.1.0-py3-none-any.whl')
 
-oidc_client_whl_path_311 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311',
-    'oidc_client-0.2.6-py3-none-any.whl',
-)
-vespucci_python_utils_whl_path_311 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311',
-    'vespucci_python_utils-0.1.2-py3-none-any.whl',
-)
-dataset_models_whl_path_311 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311',
-    'dataset_models-0.1.7-py3-none-any.whl',
-)
-dataset_api_client_whl_path_311 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311',
-    'dataset_api_client-0.1.5-py3-none-any.whl',
-)
-staiotcraft_sdk_whl_path_311 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311',
-    'staiotcraft_sdk-1.1.0-py3-none-any.whl',
-)
+oidc_client_whl_path_311 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311'
+).joinpath('oidc_client-0.2.6-py3-none-any.whl')
+vespucci_python_utils_whl_path_311 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311'
+).joinpath('vespucci_python_utils-0.1.2-py3-none-any.whl')
+dataset_models_whl_path_311 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311'
+).joinpath('dataset_models-0.1.7-py3-none-any.whl')
+dataset_api_client_whl_path_311 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311'
+).joinpath('dataset_api_client-0.1.5-py3-none-any.whl')
+staiotcraft_sdk_whl_path_311 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p311'
+).joinpath('staiotcraft_sdk-1.1.0-py3-none-any.whl')
 
-oidc_client_whl_path_312 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312',
-    'oidc_client-0.2.6-py3-none-any.whl',
-)
-vespucci_python_utils_whl_path_312 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312',
-    'vespucci_python_utils-0.1.2-py3-none-any.whl',
-)
-dataset_models_whl_path_312 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312',
-    'dataset_models-0.1.7-py3-none-any.whl',
-)
-dataset_api_client_whl_path_312 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312',
-    'dataset_api_client-0.1.5-py3-none-any.whl',
-)
-staiotcraft_sdk_whl_path_312 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312',
-    'staiotcraft_sdk-1.1.0-py3-none-any.whl',
-)
+oidc_client_whl_path_312 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312'
+).joinpath('oidc_client-0.2.6-py3-none-any.whl')
+vespucci_python_utils_whl_path_312 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312'
+).joinpath('vespucci_python_utils-0.1.2-py3-none-any.whl')
+dataset_models_whl_path_312 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312'
+).joinpath('dataset_models-0.1.7-py3-none-any.whl')
+dataset_api_client_whl_path_312 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312'
+).joinpath('dataset_api_client-0.1.5-py3-none-any.whl')
+staiotcraft_sdk_whl_path_312 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p312'
+).joinpath('staiotcraft_sdk-1.1.0-py3-none-any.whl')
 
-oidc_client_whl_path_313 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313',
-    'oidc_client-0.2.6-py3-none-any.whl',
-)
-vespucci_python_utils_whl_path_313 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313',
-    'vespucci_python_utils-0.1.2-py3-none-any.whl',
-)
-dataset_models_whl_path_313 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313',
-    'dataset_models-0.1.7-py3-none-any.whl',
-)
-dataset_api_client_whl_path_313 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313',
-    'dataset_api_client-0.1.5-py3-none-any.whl',
-)
-staiotcraft_sdk_whl_path_313 = resource_filename(
-    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313',
-    'staiotcraft_sdk-1.1.0-py3-none-any.whl',
-)
+oidc_client_whl_path_313 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313'
+).joinpath('oidc_client-0.2.6-py3-none-any.whl')
+vespucci_python_utils_whl_path_313 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313'
+).joinpath('vespucci_python_utils-0.1.2-py3-none-any.whl')
+dataset_models_whl_path_313 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313'
+).joinpath('dataset_models-0.1.7-py3-none-any.whl')
+dataset_api_client_whl_path_313 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313'
+).joinpath('dataset_api_client-0.1.5-py3-none-any.whl')
+staiotcraft_sdk_whl_path_313 = importlib.resources.files(
+    'stdatalog_core.HSD_utils.staiotcraft_dependencies.p313'
+).joinpath('staiotcraft_sdk-1.1.0-py3-none-any.whl')
 
-check_path = resource_filename(
-    'stdatalog_gui.UI.icons',
-    'outline_check_white_18dp.png',
-)
-cloud_upload_path = resource_filename(
-    'stdatalog_gui.UI.icons',
-    'outline_cloud_upload_white_18dp.png',
-)
+check_path = str(importlib.resources.files(
+    'stdatalog_gui.UI.icons'
+).joinpath('outline_check_white_18dp.png'))
 
-hsd2_folder_icon_path = resource_filename(
-    'stdatalog_gui.UI.icons',
-    'baseline_folder_open_white_18dp.png',
-)
+cloud_upload_path = str(importlib.resources.files(
+    'stdatalog_gui.UI.icons'
+).joinpath('outline_cloud_upload_white_18dp.png'))
+
+hsd2_folder_icon_path = str(importlib.resources.files(
+    'stdatalog_gui.UI.icons'
+).joinpath('baseline_folder_open_white_18dp.png'))
 
 from stdatalog_gui.Widgets.AcqListItemWidget import AcqListItemWidget
 from stdatalog_core.HSD.HSDatalog import HSDatalog

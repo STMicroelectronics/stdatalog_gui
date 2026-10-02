@@ -20,23 +20,47 @@ from functools import partial
 from stdatalog_gui.Utils.PlotParams import SensorCameraPlotParams
 
 from PySide6.QtCore import Slot, Qt, QTimer, QPoint
-from PySide6.QtGui import QColor, QIcon, QIntValidator, QPainter, QPen, QBrush, QPixmap
+from PySide6.QtGui import QColor, QIcon, QImage, QIntValidator, QPainter, QPen, QBrush, QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QFrame, QPushButton, QLineEdit, QButtonGroup, QLabel, QGridLayout
 
 import pyqtgraph as pg
 from stdatalog_gui.UI.styles import STDTDL_Chip, STDTDL_LineEdit, STDTDL_PushButton
 from stdatalog_gui.Utils import UIUtils
 from stdatalog_gui.Widgets.Plots.PlotWidget import CustomPGPlotWidget, PlotWidget
-from PIL import Image
-
 from PySide6.QtCore import Signal
 
-from pkg_resources import resource_filename
+import importlib.resources
+
 import struct
-import io
 import math
 
-start_image = resource_filename('stdatalog_gui.UI.images', 'st_logo.png')
+start_image = importlib.resources.files('stdatalog_gui.UI.images').joinpath('st_logo.png')
+
+
+def load_qimage_as_rgb(image_path):
+    image = QImage(str(image_path)).convertToFormat(QImage.Format.Format_RGB888)
+    if image.isNull():
+        raise ValueError(f"Unable to load image: {image_path}")
+    rows = np.frombuffer(image.bits(), dtype=np.uint8, count=image.sizeInBytes()).reshape(
+        image.height(), image.bytesPerLine())
+    return rows[:, :image.width() * 3].reshape(image.height(), image.width(), 3).copy()
+
+
+def decode_jpeg_as_rgb(image_bytes):
+    image = QImage.fromData(image_bytes, "JPEG").convertToFormat(QImage.Format.Format_RGB888)
+    if image.isNull():
+        raise ValueError("Unable to decode JPEG image data")
+    rows = np.frombuffer(image.bits(), dtype=np.uint8, count=image.sizeInBytes()).reshape(
+        image.height(), image.bytesPerLine())
+    return rows[:, :image.width() * 3].reshape(image.height(), image.width(), 3).copy()
+
+
+def save_rgb_bmp(image, filename):
+    image = np.ascontiguousarray(image)
+    height, width, _ = image.shape
+    qimage = QImage(image.data, width, height, image.strides[0], QImage.Format.Format_RGB888)
+    if not qimage.save(filename, "BMP"):
+        raise OSError(f"Unable to save BMP image: {filename}")
 
 # Provided register values
 reg_values = {
@@ -182,7 +206,7 @@ class PlotImageWidget(PlotWidget):
         self.image_width  = width
         self.path_image_start =  start_image
 
-        image = np.array(Image.open(start_image).rotate(-90, expand = True))
+        image = np.rot90(load_qimage_as_rgb(start_image), k=-1)
                  
         self.img = pg.ImageItem(image)
 
@@ -379,24 +403,22 @@ class PlotImageWidget(PlotWidget):
                     # Combina i canali in un array RGB888
                     rgb888_array = np.stack((r, g, b), axis=-1).astype(np.uint8)
 
-                    # Create an image from the numpy array
-                    image = Image.fromarray(rgb888_array, 'RGB').rotate(-90, expand=True)
+                    image = np.rot90(rgb888_array, k=-1)
                     # Display the image
-                    self.img.setImage(np.array(image))
+                    self.img.setImage(image)
                     # Save the image
-                    self.img.save("{0}/img_565_{1}.bmp".format(folder, self.count_show))
+                    save_rgb_bmp(image, "{0}/img_565_{1}.bmp".format(folder, self.count_show))
                 case 1:
                     self.bytes_per_pixel = 3 #RGB888
                     uint8_buffer = np.array(image_data, dtype=np.uint8).view(dtype=np.uint8)
                     
                     rgb888_array = np.reshape(uint8_buffer, ((self.image_height, self.image_width, 3)))
 
-                    # Create an image from the numpy array
-                    image = Image.fromarray(rgb888_array, 'RGB').rotate(-90, expand=True)
+                    image = np.rot90(rgb888_array, k=-1)
                     # Display the image
-                    self.img.setImage(np.array(image))
+                    self.img.setImage(image)
                     # Save the image
-                    image.save("{0}/img_888_{1}.bmp".format(folder, self.count_show))
+                    save_rgb_bmp(image, "{0}/img_888_{1}.bmp".format(folder, self.count_show))
                 case 2:
                     self.bytes_per_pixel = 2 #YUV422 
 
@@ -472,14 +494,11 @@ class PlotImageWidget(PlotWidget):
                     #rgb888_array = np.stack((r, g, b), axis=-1).astype(np.uint8)
                     #rgb_image = np.stack((r, g, b), axis=-1).astype(np.uint8)
 
-                    # Create an image from the numpy array
-                    #image = Image.fromarray(rgb888_array, 'RGB').rotate(-90, expand=True)
-                    #image = Image.fromarray(rgb_image, 'RGB').rotate(-90, expand=True)
-                    image = Image.fromarray(rgb, 'RGB').rotate(-90, expand=True)
+                    image = np.rot90(rgb, k=-1)
                     # Display the image
-                    self.img.setImage(np.array(image))
+                    self.img.setImage(image)
                     # Save the image
-                    image.save("{0}/img_yuv422_{1}.bmp".format(folder, self.count_show))
+                    save_rgb_bmp(image, "{0}/img_yuv422_{1}.bmp".format(folder, self.count_show))
                 case 7:
                     # Extract the image data
                     self.bytes_per_pixel = 1 #Y8
@@ -489,26 +508,25 @@ class PlotImageWidget(PlotWidget):
                     # Convert Y8 to RGB888 (grayscale to RGB)
                     rgb888_array = np.stack((y8_image, y8_image, y8_image), axis=-1).astype(np.uint8)
                     
-                    # Create an image from the numpy array
-                    image = Image.fromarray(rgb888_array, 'RGB').rotate(-90, expand=True)
+                    image = np.rot90(rgb888_array, k=-1)
                     # Display the image
-                    self.img.setImage(np.array(image))
+                    self.img.setImage(image)
                     # Save the image
-                    image.save("{0}/img_y8_{1}.bmp".format(folder, self.count_show))
+                    save_rgb_bmp(image, "{0}/img_y8_{1}.bmp".format(folder, self.count_show))
                 case 8:
                     self.bytes_per_pixel = 1 #JPG
                     uint_buffer = np.array(image_data, dtype=np.float32).astype(np.uint8)
                     byte_array = bytearray(uint_buffer.tobytes())
                     
                     try:
-                        image = Image.open(io.BytesIO(byte_array)).rotate(-90, expand = True)
+                        image = np.rot90(decode_jpeg_as_rgb(byte_array), k=-1)
                     except:
-                        image = Image.open(start_image).rotate(-90, expand = True)
+                        image = np.rot90(load_qimage_as_rgb(start_image), k=-1)
                         print("An exception occurred")
                     
-                    self.img.setImage(np.array(image))
+                    self.img.setImage(image)
                     # Save the image
-                    image.save("{0}}/img_jpg_{1}.bmp".format(folder, self.count_show))
+                    save_rgb_bmp(image, "{0}/img_jpg_{1}.bmp".format(folder, self.count_show))
                 case _:
                     self.bytes_per_pixel = 0
             #print("remain data len = {0} after plot".format(len(self.data)))

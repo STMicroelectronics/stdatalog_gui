@@ -33,57 +33,20 @@ from stdatalog_gui.HSD_MC_GUI.Widgets.HSD_MC_ConnectionWidget import HSD_MC_Conn
 import stdatalog_gui.UI.images
 import stdatalog_gui.HSD_MC_GUI.UI.images
 
-from pkg_resources import resource_filename
+import importlib.resources
 
-
-motor_recovery_img_path = resource_filename(
-    'stdatalog_gui.HSD_MC_GUI.UI.images',
-    'Recovery_Status.png'
-)
-motor_normal_img_path = resource_filename(
-    'stdatalog_gui.HSD_MC_GUI.UI.images',
-    'Motor_Normal_Class.png'
-)
-motor_anomaly_img_path = resource_filename(
-    'stdatalog_gui.HSD_MC_GUI.UI.images',
-    'Motor_Anomaly_Class.png'
-)
-motor_vibration_img_path = resource_filename(
-    'stdatalog_gui.HSD_MC_GUI.UI.images',
-    'Motor_Vibration_Class.png'
-)
-motor_magnet_img_path = resource_filename(
-    'stdatalog_gui.HSD_MC_GUI.UI.images',
-    'Motor_Magnet_Class.png'
-)
-motor_belt_img_path = resource_filename(
-    'stdatalog_gui.HSD_MC_GUI.UI.images',
-    'Motor_Belt_Class.png'
-)
-ispu_logo_img_path = resource_filename(
-    'stdatalog_gui.UI.images',
-    'ISPU.png'
-)
-nanoedge_ispu_logo_img_path = resource_filename(
-    'stdatalog_gui.UI.images',
-    'Nanoedge_ISPU.png'
-)
-nanoedge_stm32_logo_img_path = resource_filename(
-    'stdatalog_gui.UI.images',
-    'Nanoedge_STM32.png'
-)
-cubeai_stm32_logo_img_path = resource_filename(
-    'stdatalog_gui.UI.images',
-    'CubeAI_STM32.png'
-)
-ai_output_img_path = resource_filename(
-    'stdatalog_gui.UI.images',
-    'AI_Output.png'
-)
-motor_bearing_img_path = resource_filename(
-    'stdatalog_gui.HSD_MC_GUI.UI.images',
-    'Motor_Bearing_Class.png'
-)
+motor_recovery_img_path = str(importlib.resources.files('stdatalog_gui.HSD_MC_GUI.UI.images').joinpath('Recovery_Status.png'))
+motor_normal_img_path = str(importlib.resources.files('stdatalog_gui.HSD_MC_GUI.UI.images').joinpath('Motor_Normal_Class.png'))
+motor_anomaly_img_path = str(importlib.resources.files('stdatalog_gui.HSD_MC_GUI.UI.images').joinpath('Motor_Anomaly_Class.png'))
+motor_vibration_img_path = str(importlib.resources.files('stdatalog_gui.HSD_MC_GUI.UI.images').joinpath('Motor_Vibration_Class.png'))
+motor_magnet_img_path = str(importlib.resources.files('stdatalog_gui.HSD_MC_GUI.UI.images').joinpath('Motor_Magnet_Class.png'))
+motor_belt_img_path = str(importlib.resources.files('stdatalog_gui.HSD_MC_GUI.UI.images').joinpath('Motor_Belt_Class.png'))
+ispu_logo_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('ISPU.png'))
+nanoedge_ispu_logo_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('Nanoedge_ISPU.png'))
+nanoedge_stm32_logo_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('Nanoedge_STM32.png'))
+cubeai_stm32_logo_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('CubeAI_STM32.png'))
+ai_output_img_path = str(importlib.resources.files('stdatalog_gui.UI.images').joinpath('AI_Output.png'))
+motor_bearing_img_path = str(importlib.resources.files('stdatalog_gui.HSD_MC_GUI.UI.images').joinpath('Motor_Bearing_Class.png'))
 
 class HSD_MC_AI_MainWindow(STDTDL_MainWindow):
     """Main window for Motor Control with AI visualization.

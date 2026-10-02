@@ -69,9 +69,10 @@ from stdatalog_core.HSD_utils.DataClass import TypeEnum
 from stdatalog_gui.STDTDL_Controller import ComponentType
 
 import stdatalog_gui.UI.icons 
-from pkg_resources import resource_filename
-icon_pop_in_img_path = resource_filename('stdatalog_gui.UI.icons', 'pop-in_18dp_E8EAED.svg')
-icon_pop_out_img_path = resource_filename('stdatalog_gui.UI.icons', 'pop-out_18dp_E8EAED.svg')
+import importlib.resources
+
+icon_pop_in_img_path = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('pop-in_18dp_E8EAED.svg'))
+icon_pop_out_img_path = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('pop-out_18dp_E8EAED.svg'))
 
 import stdatalog_core.HSD_utils.logger as logger
 log = logger.get_logger(__name__)
@@ -917,7 +918,11 @@ class ComponentWidget(QWidget):
                             #         self.s_component_updated()
                     if isinstance(cont_value, dict):
                         log.debug(f" - Content: {cont_name}")
-                        for key in cont_value:
+                        ordered_keys = list(cont_value)
+                        if "val" in cont_value and ("min" in cont_value or "max" in cont_value):
+                            ordered_keys.remove("val")
+                            ordered_keys.append("val")
+                        for key in ordered_keys:
                             log.debug(f"  -- {key}: {cont_value[key]}")
                             self.update_property_widget(
                                 comp_name,

@@ -39,8 +39,9 @@ from stdatalog_gui.Widgets.Plots.PlotLinesWidget import PlotLinesWidget
 from stdatalog_gui.Widgets.Plots.PlotHeatmapWidget import PlotHeatmapWidget
 
 import stdatalog_gui.UI.icons
-from pkg_resources import resource_filename
-plugin_img_path = resource_filename('stdatalog_gui.UI.icons', 'power_18dp_E8EAED.svg')
+
+import importlib.resources
+plugin_img_path = str(importlib.resources.files('stdatalog_gui.UI.icons').joinpath('power_18dp_E8EAED.svg'))
 
 class PluginPlotType(Enum):
     """Enumeration of plot types accepted by the plugin factory.
