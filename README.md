@@ -19,7 +19,7 @@ The package offers a set of base classes and utilities to create custom GUI appl
 - Device configuration and control
 - Application logging and error management display
 - Support for multiple platforms (Windows, Linux, macOS)
-- Compatible with Python 3.10 to 3.13
+- Compatible with Python 3.11 to 3.13
 - Communication with various hardware devices
 
 ## Installation
